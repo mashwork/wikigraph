@@ -21,17 +21,20 @@ public class MyCallBackHandler implements PageCallbackHandler {
 	static int counter = 0;
 	static int total = 13254844;
 	private HashMap<String,Integer> list;
-    private HashMap<String,Integer> list2;
+    //private HashMap<String,Integer> list2;
     int iteration;
     boolean printLinks2Screen = false;
     boolean printStructure2Screen = false;
     boolean printProgress2Screen = true;
     
+    static int pageCount = 0;
+    static int linkCount = 0;
+    
 	public MyCallBackHandler(XMLStreamWriter writer, HashMap<String,Integer> list)
 	{
 		this.writer = writer;
 		this.list = list;
-		this.list2 = new HashMap<String,Integer>();
+		//this.list2 = new HashMap<String,Integer>();
         //list2.put("Total_Page_to_Process", 0);
 	}
 	
@@ -131,57 +134,103 @@ public class MyCallBackHandler implements PageCallbackHandler {
     	this.list2 = new HashMap<String,Integer>();
     }
     
-	private void StructureRecursion(Section section, String l) throws XMLStreamException
+	private void StructureRecursion(List<Section> sectionList, String l) throws XMLStreamException
 	{
-		if(section instanceof SectionContent)
+		int k = 1;
+		for(Section section:sectionList)
 		{
-			List<Content> content = section.getContentList();
-			for(Content c: content)
+			if(section.getTitle() != null)
 			{
-				List<Link> links = c.getLinks();
-				for(Link link:links)
-				{
-					int level = section.getLevel();
-					if(needPrintLinks())
-					{
-						while(level-->0)
-						{
-							System.out.print("  ");
-						}
-						System.out.println("Type: "+link.getType()+"  Link: "+link.getTarget());
-					}
-					if(link.getType().equals(Link.type.INTERNAL) || link.getType().equals(Link.type.UNKNOWN))
-					{
-						tryAddPage(link.getTarget().toString());
-						writer.writeStartElement("l");
-				        writer.writeCharacters(link.getTarget().toString());
-				       	writer.writeEndElement();
-					}
-				}
-			}
-			return;
-		}
-		if(section instanceof SectionContainer)
-		{
-			SectionContainer sc = (SectionContainer)section;
-			List<Section> content = sc.getSubSections();
-			int k = 0;
-			for(Section s:content)
-			//for(int k = 0; k < content.size();k++)
-			{
+				int level = section.getLevel();
 				if(needPrintStructure())
 				{
-					int level = section.getLevel();
 					for(int i = 0; i < level; i++)
 					{
 						System.out.print("  ");
 					}
-					System.out.print(l+"."+k++ +" ");
-					System.out.println(s.getTitle());
+					if(level==2)
+					{
+						System.out.print(k++ +" ");
+					}
+					else
+					{
+						System.out.print(l+k++ +" ");
+					}
+					System.out.println(section.getTitle());
 				}
-				StructureRecursion(s,l+"."+k);
+				String tableLevel = "c" + String.valueOf(level);
+				writer.writeStartElement(tableLevel);
+			    writer.writeCharacters(section.getTitle());
+			    writer.writeEndElement();
+			}
+			if(section instanceof SectionContent)
+			{
+				List<Content> content = section.getContentList();
+				for(Content c: content)
+				{
+					List<Link> links = c.getLinks();
+					for(Link link:links)
+					{
+						int level = section.getLevel();
+						if(needPrintLinks())
+						{
+							while(level-->0)
+							{
+								System.out.print("  ");
+							}
+							System.out.println("Type: "+link.getType()+"  Link: "+link.getTarget());
+						}
+						if(link.getType().equals(Link.type.INTERNAL) || link.getType().equals(Link.type.UNKNOWN))
+						{
+							String link2 = link.getTarget().toString();
+							
+							if(toBeFiltered(link2)) continue;
+							
+							if(isAnchorLink(link2))
+							{
+								String[] pageNames = link2.split("#");
+								tryAddPage(pageNames[0]);
+							}
+							else
+							{
+								tryAddPage(link.getTarget().toString());
+							}
+							linkCount++;
+							writer.writeStartElement("l");
+					        writer.writeCharacters(link.getTarget().toString());
+					       	writer.writeEndElement();
+						}
+					}
+				}
+				
+			}
+			if(section instanceof SectionContainer)
+			{
+				SectionContainer sc = (SectionContainer)section;
+				List<Section> content = sc.getSubSections();
+				StructureRecursion(content,l+String.valueOf(k-1)+".");
 			}
 		}
+		
+		return;
+	}
+	
+	private boolean toBeFiltered(String link)
+	{
+		if(link=="") return true;
+		if(link.contains("File:") || link.contains("Special:") || 
+				link.contains("User:") || link.charAt(0)=='#')
+			return true;
+		else
+			return false;
+	}
+	
+	private boolean isAnchorLink(String link)
+	{
+		if(link.contains("#"))
+			return true;
+		else
+			return false;
 	}
 	
 	public void process(WikiPage page){
@@ -202,7 +251,7 @@ public class MyCallBackHandler implements PageCallbackHandler {
 			//if(!page.getTitle().contains("Anarchism")) return;
 			if(!checkList(title)) return;
 			//System.out.print("Title: " + title);
-			
+			pageCount++;
 	        writer.writeStartElement("t");
 	        writer.writeCharacters(title);
 	        writer.writeEndElement();
@@ -212,40 +261,9 @@ public class MyCallBackHandler implements PageCallbackHandler {
 			MediaWikiParser parser = pf.createParser();
 			
 			ParsedPage pp = parser.parse(page.getWikiText());
-			//ParsedPage pp = parser.parse(TestString.getFileText());
 			
-			//System.out.println("Total section number "+pp.getSections().size());
-			int k = 0;
-			for(Section section : pp.getSections()) {
-				//System.out.print(k++ +" ");
-				//System.out.println(section.getTitle());
-				StructureRecursion(section,String.valueOf(k-1));
-			}
+			StructureRecursion(pp.getSections(),"");
 	        
-//	        Vector<String> links = new Vector<String>();
-//	        links = page.getLinks();
-//	        
-//	        String redirectPage;
-//	        redirectPage = page.getRedirectPage();
-//	
-//	        if(redirectPage != null)
-//	        {
-//	        	writer.writeStartElement("l");
-//		        writer.writeCharacters(redirectPage);
-//		       	writer.writeEndElement();
-//	        }
-//	             
-//	        for(String s:links)
-//	        {
-//	      	  //System.out.println("	Link:" + s);
-//	      	if(s!=null)
-//	    	  {
-//			     writer.writeStartElement("l");
-//			     writer.writeCharacters(s);
-//			     writer.writeEndElement();
-//	    	  }
-//	        }
-//	        System.out.println();
 		}
 		catch(XMLStreamException e)
 		{

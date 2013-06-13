@@ -3,7 +3,6 @@ package com.mashwork.wikipedia.ParseXML;
 import edu.jhu.nlp.wikipedia.*;
 import java.io.FileOutputStream;
 import java.util.HashMap;
-
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLOutputFactory;
 
@@ -18,12 +17,14 @@ public class test {
 //      System.out.println("USAGE: ExtractLinks <input-file> <output-file> <query> <step>");
 //      System.exit(255);
 //  }
-		//String dir = "/Users/Ricky/mashwork/wikiXmlParser/wiki_test.xml";
-		//String dir = "/Users/Ricky/mashwork/wikidump/enwiki-20130304-pages-articles.xml.bz2";
-		String dir = "/Users/Ricky/mashwork/wikidump/enwiki-20130304-pages-articles.xml";
-		String outputFile = "/Users/Ricky/mashwork/wikiXmlParser/MVN_test.xml";
-		String query = "Game of Thrones (TV series)";
-		int step = 4;
+		//String dir = "/Users/Ricky/mashwork/wikiXmlParser/20130304/wiki_test.xml";
+		//String dir = "/Users/Ricky/mashwork/wikidump/20130304/enwiki-20130304-pages-articles.xml.bz2";
+		String dir = "/Users/Ricky/mashwork/wikidump/20130304/enwiki-20130304-pages-articles.xml";
+		String outputFile = "/Users/Ricky/mashwork/wikiXmlParser/Anarchism_D2_TOC_Equal.xml";
+		//String outputFile = "/Users/Ricky/mashwork/wikiXmlParser/GOT_D4_TOC_Equal.xml";
+		//String query = "Game of Thrones (TV series)";
+		String query = "Anarchism";
+		int step = 2;
 		
 		HashMap<String,Integer> list = new HashMap<String,Integer>();
         list.put(query, 0);
@@ -41,12 +42,14 @@ public class test {
             MyCallBackHandler MBH = new MyCallBackHandler(writer,list);
             
             //if you want to print the information to the screen, uncomment the following line
-            //MBH.setPrintLinks(true);
+            //MBH.setPrintLink(true);
             //MBH.setPrintStructure(true);
             //MBH.setPrintProgress(false);
             
             wxsp.setPageCallback(MBH);
                 
+            long startTime = System.currentTimeMillis();
+            
             while(step-->0)
             {
             	wxsp.parse();
@@ -56,7 +59,12 @@ public class test {
             writer.writeEndElement();
             writer.writeEndDocument();
             writer.close();
-           
+            
+            long elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
+            
+            System.out.println("Totally "+MyCallBackHandler.pageCount+" pages  crawled. Totally "
+            		+MyCallBackHandler.linkCount+" links crawled.");
+            System.out.println("Totally "+elapsedSeconds+" seconds used.");
         }catch(Exception e) {
                 e.printStackTrace();
         }
