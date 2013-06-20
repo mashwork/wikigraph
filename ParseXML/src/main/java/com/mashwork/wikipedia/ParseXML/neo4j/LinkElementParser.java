@@ -1,25 +1,29 @@
 package com.mashwork.wikipedia.ParseXML.neo4j;
 
+import java.net.URLDecoder;
 import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.List;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
 public class LinkElementParser extends ElementParser{
 	final String USERNAME_KEY = "pageName";
 	final String TOC_KEY = "TocName";
-	final static int linkCount = 2138677;
+	final static int linkCount = 3038323;
 	static int counter = 0;
 	static List<Node> ListNodes = null;
 	static String fatherName = null;
 	
+	static Transaction tx;
 	
-	public LinkElementParser(GraphDatabaseService graphDb, Index<Node> nodeIndex, Index<Node> TocIndex)
+	public LinkElementParser(GraphDatabaseService graphDb, Index<Node> nodeIndex, Index<Node> TocIndex,Transaction tx)
 	{
 		super(graphDb,nodeIndex,TocIndex);
+		LinkElementParser.tx = tx;
 	}
 	
 	@Override
@@ -55,6 +59,12 @@ public class LinkElementParser extends ElementParser{
 		}
 		else			//This is the case for links. Need to analyze several cases.
 		{
+			if ( counter > 0 && counter % 10000 == 0 ) {
+	            tx.success();
+	            tx.finish();
+	            tx = graphDb.beginTx();
+	        }
+			
 			DecimalFormat df = new DecimalFormat("0.00");
 			double percentage = ((double)counter++/linkCount*100);
 			if(counter%(linkCount/100) == 0 )
@@ -62,6 +72,9 @@ public class LinkElementParser extends ElementParser{
 				System.out.println("Processing link: "+ counter
 					+"  "+df.format(percentage)+"% " +"  "+ value);
 			}
+			
+			value = toNormalLink(value);
+			
 			if(isAnchorLink(value))
 			{
 				Node TOC = locateToc(value);
@@ -78,6 +91,8 @@ public class LinkElementParser extends ElementParser{
 			}
 			else
 			{
+				//System.out.println(value);
+				
 				Node node = retrievePageNode(value);
 				if(node == null)
 				{
@@ -94,9 +109,17 @@ public class LinkElementParser extends ElementParser{
 				}
 				else
 				{
-					if(fatherNode==null) System.out.println("Father is null");
-					if(node==null) System.out.println("Node is null");
-					System.out.println("Father: " + fatherNode.getProperty(USERNAME_KEY) +"  Node "+ node.getProperty(USERNAME_KEY));
+					if(fatherNode==null)
+					{
+						System.out.println("Father node is null");
+						return;
+					}
+					if(node==null)
+					{
+						System.out.println("Son node is null");
+						return;
+					}
+					//System.out.println("Father: " + fatherNode.getProperty(USERNAME_KEY) +"  Node "+ node.getProperty(USERNAME_KEY));
 					fatherNode.createRelationshipTo(node, RelTypes.INTERNAL);
 //					System.out.println("Link Created(Inter): "+fatherNode.getProperty(USERNAME_KEY)+
 //							" -> "+node.getProperty(USERNAME_KEY) + "  value:" + value);
@@ -143,7 +166,7 @@ public class LinkElementParser extends ElementParser{
 		//System.out.println("Is anchor link." + value);
 		String[] pageName = value.split("#");
 		Node page = retrievePageNode(pageName[0]);
-		if(page==null)
+		if(pageName.length == 1 || page==null)
 		{
 			TOCLocator.linkNotFound++;
 			//System.out.println("Warning: Case I. Page " + pageName[0] + " is not stored in the current xml. Out of range.");
@@ -154,9 +177,33 @@ public class LinkElementParser extends ElementParser{
 	}
 	private Node findNextTOC(String queryName)
 	{
-		String TocName = fatherName + queryName;
-		System.out.println("TocName is :" + TocName);
-		return TocIndex.get(TOC_KEY,TocName).getSingle();
+		String TocName = fatherName +"#"+ queryName;
+		//System.out.println("TocName is :" + TocName);
+		Iterator<Node> it = TocIndex.get(TOC_KEY,TocName);
+		if(TocIndex.get(TOC_KEY,TocName).size() > 1)
+		{
+			//while(it.hasNext()) System.out.println(it.next().getProperty(TOC_KEY,TocName));
+			return it.next();
+		}
+		else
+		{
+			return TocIndex.get(TOC_KEY,TocName).getSingle();
+		}
+		//return null;
+	}
+	
+	private String toNormalLink(String link)
+	{
+		if(link==null) return null;
+    	link =  link.substring(0,1).toUpperCase()+link.substring(1,link.length());
+    	try{
+    		link = URLDecoder.decode(link,"UTF-8");
+    	}catch(Exception e)
+    	{
+    		System.out.print("URLDecoder Error! ");
+    		System.out.println(link);
+    	}
+		return link.replace('_',' ');
 	}
 //	private Node findNextTOC(String queryName)
 //	{

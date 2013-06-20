@@ -3,7 +3,7 @@ import java.util.*;
 import java.text.DecimalFormat; 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-
+import java.net.URLDecoder;
 import de.tudarmstadt.ukp.wikipedia.parser.Link;
 import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
 import de.tudarmstadt.ukp.wikipedia.parser.SectionContainer;
@@ -19,8 +19,12 @@ import edu.jhu.nlp.wikipedia.*;
 public class MyCallBackHandler implements PageCallbackHandler {
 	XMLStreamWriter writer;
 	static int counter = 0;
-	static int total = 13254844;
-	private HashMap<String,Integer> list;
+	//static int total = 13254844;
+	static int total = 13539091;
+	private static HashMap<String,Integer> toCrawl;
+	private static HashSet<String> Crawled = new HashSet<String>();
+	public static int level = 0;
+	public static int step;
     //private HashMap<String,Integer> list2;
     int iteration;
     boolean printLinks2Screen = false;
@@ -30,10 +34,11 @@ public class MyCallBackHandler implements PageCallbackHandler {
     static int pageCount = 0;
     static int linkCount = 0;
     
-	public MyCallBackHandler(XMLStreamWriter writer, HashMap<String,Integer> list)
+	public MyCallBackHandler(XMLStreamWriter writer, HashMap<String,Integer> list, int step)
 	{
 		this.writer = writer;
-		this.list = list;
+		MyCallBackHandler.toCrawl = list;
+		MyCallBackHandler.step = step;
 		//this.list2 = new HashMap<String,Integer>();
         //list2.put("Total_Page_to_Process", 0);
 	}
@@ -102,11 +107,10 @@ public class MyCallBackHandler implements PageCallbackHandler {
 //    	return false;
     	
     	//Below is the "equals String" version
-    	if(list.containsKey(query) && list.get(query) == 0)//
+    	if(toCrawl.containsKey(query) && toCrawl.get(query) == level)//
     	{
-    		list.put(query, 1);
-    		//int num = list.get("Total_Page_to_Process");
-    		//list.put("Total_Page_to_Process",num-1);
+    		toCrawl.remove(query);
+    		Crawled.add(query);
     		return true;
     	}
     	else
@@ -119,20 +123,16 @@ public class MyCallBackHandler implements PageCallbackHandler {
   //code to add recently found link/pages
     private void tryAddPage(String link)
     {
-    	if(list2.containsKey(link)) return;
-    	else
-    	{
-    		//int num = list2.get("Total_Page_to_Process");
-    		//list2.put("Total_Page_to_Process",num+1);
-    		list2.put(link,0);
-    	}
+    	if(MyCallBackHandler.level < MyCallBackHandler.step &&
+    			!Crawled.contains(link) && !toCrawl.containsKey(link))
+    	toCrawl.put(link,level+1);
     }
     
-    public void switchList()
-    {
-    	this.list = this.list2;
-    	this.list2 = new HashMap<String,Integer>();
-    }
+//    public void switchList()
+//    {
+//    	this.list = this.list2;
+//    	this.list2 = new HashMap<String,Integer>();
+//    }
     
 	private void StructureRecursion(List<Section> sectionList, String l) throws XMLStreamException
 	{
@@ -159,9 +159,11 @@ public class MyCallBackHandler implements PageCallbackHandler {
 					System.out.println(section.getTitle());
 				}
 				String tableLevel = "c" + String.valueOf(level);
+				writeSpace(level);
 				writer.writeStartElement(tableLevel);
 			    writer.writeCharacters(section.getTitle());
 			    writer.writeEndElement();
+			    writeLine();
 			}
 			if(section instanceof SectionContent)
 			{
@@ -193,12 +195,16 @@ public class MyCallBackHandler implements PageCallbackHandler {
 							}
 							else
 							{
-								tryAddPage(link.getTarget().toString());
+								String[] pageNames2 = link.getTarget().toString().split("\n");
+								//tryAddPage(link.getTarget().toString());
+								tryAddPage(toNormalLink(pageNames2[0]));
 							}
 							linkCount++;
+							writeSpace(level+1);
 							writer.writeStartElement("l");
 					        writer.writeCharacters(link.getTarget().toString());
 					       	writer.writeEndElement();
+					       	writeLine();
 						}
 					}
 				}
@@ -213,6 +219,20 @@ public class MyCallBackHandler implements PageCallbackHandler {
 		}
 		
 		return;
+	}
+	
+	private String toNormalLink(String link)
+	{
+		if(link==null) return null;
+    	link =  link.substring(0,1).toUpperCase()+link.substring(1,link.length());
+    	try{
+    		link = URLDecoder.decode(link,"UTF-8");
+    	}catch(Exception e)
+    	{
+    		System.out.print("URLDecoder Error! ");
+    		System.out.println(link);
+    	}
+		return link.replace('_',' ');
 	}
 	
 	private boolean toBeFiltered(String link)
@@ -233,11 +253,19 @@ public class MyCallBackHandler implements PageCallbackHandler {
 			return false;
 	}
 	
+	public boolean timeToStop()
+	{
+		if(toCrawl.size() == 0 || MyCallBackHandler.level > MyCallBackHandler.step)
+			return true;
+		else
+			return false;
+	}
+	
 	public void process(WikiPage page){
 		try{
 			
 			String title = processTitle(page.getTitle());
-			
+			//title = page.getTitle();
 			if(needPrintProgress())
 			{
 				DecimalFormat df = new DecimalFormat("0.00");
@@ -255,6 +283,7 @@ public class MyCallBackHandler implements PageCallbackHandler {
 	        writer.writeStartElement("t");
 	        writer.writeCharacters(title);
 	        writer.writeEndElement();
+	        writeLine();
 	
 	        //System.out.println(page.getWikiText());
 	        MediaWikiParserFactory pf = new MediaWikiParserFactory();
@@ -270,4 +299,16 @@ public class MyCallBackHandler implements PageCallbackHandler {
 			System.out.println("XML write error!");
 		}
  }
+	private void writeSpace(int num) throws XMLStreamException
+	{
+		while(num-->0)
+		{
+			writer.writeCharacters(" ");
+		}
+	}
+	private void writeLine() throws XMLStreamException
+	{
+		writer.writeCharacters("\n");
+	}
+	
 }

@@ -37,7 +37,7 @@ public class TOCLocator {
 	//This method will find TOC in the next level(depth 1)
 	public static List<Node> findAllTOC(Node currentNode)
 	{
-		String name = currentNode.getProperty(USERNAME_KEY).toString();
+		//String name = currentNode.getProperty(USERNAME_KEY).toString();
 		
 		List<Node> result = new ArrayList<Node>();
 		Traverser nodeTraverser = getNode(currentNode,5);

@@ -10,7 +10,8 @@ public class NodeElementParser extends ElementParser{
 	final String USERNAME_KEY = "pageName";
 	final String TOC_KEY = "TocName";
 	static String fatherName;
-	final static int pageCount = 20855;
+	final static int pageCount = 25579;
+	static int links = 0;
 	static int counter = 0;
 	public NodeElementParser(GraphDatabaseService graphDb, Index<Node> nodeIndex, Index<Node> TocIndex)
 	{
@@ -22,6 +23,7 @@ public class NodeElementParser extends ElementParser{
 	{
 		if(element.equals("l") || element.equals("d"))
 		{
+			links++;
 			return;
 		}
 		if(element.equals("t"))
@@ -56,9 +58,7 @@ public class NodeElementParser extends ElementParser{
 			//Node fatherNode = fatherPair.getSecond();
 			
 			fatherNode.createRelationshipTo(node, RelTypes.TOC);
-			
-			
-			
+
 			HierachyManager.MyPush(pair);
 			
 //			System.out.println("Create node: " +value + " Create link: " + 
@@ -71,9 +71,9 @@ public class NodeElementParser extends ElementParser{
 	{
 		Node node = graphDb.createNode();
         node.setProperty( USERNAME_KEY, pageName );
-        String TocName = fatherName + pageName;
+        String TocName = fatherName + "#"+pageName;
         node.setProperty( TOC_KEY, TocName);
-        if(fatherName.equals("Amsterdam")) System.out.println("The stored name: "+TocName);
+        //if(fatherName.equals("Amsterdam")) System.out.println("The stored name: "+TocName);
         TocIndex.add(node,TOC_KEY,TocName);
         return node;
 	}

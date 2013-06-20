@@ -18,12 +18,14 @@ public class test {
 //      System.exit(255);
 //  }
 		//String dir = "/Users/Ricky/mashwork/wikiXmlParser/20130304/wiki_test.xml";
-		//String dir = "/Users/Ricky/mashwork/wikidump/20130304/enwiki-20130304-pages-articles.xml.bz2";
-		String dir = "/Users/Ricky/mashwork/wikidump/20130304/enwiki-20130304-pages-articles.xml";
-		String outputFile = "/Users/Ricky/mashwork/wikiXmlParser/Anarchism_D2_TOC_Equal.xml";
-		//String outputFile = "/Users/Ricky/mashwork/wikiXmlParser/GOT_D4_TOC_Equal.xml";
+		//String dir = "/Users/Ricky/mashwork/wikidump/new/enwiki-20130604-pages-articles.xml.bz2";
+		//String dir = "/Users/Ricky/mashwork/wikidump/new/GameOfThrones.xml";
+		String dir = "/Users/Ricky/mashwork/wikidump/new/enwiki-20130604-pages-articles.xml";
+		//String dir = "/Users/Ricky/mashwork/wikidump/old/Mytest.xml";
+		//String outputFile = "/Users/Ricky/mashwork/wikiXmlParser/test.xml";
+		String outputFile = "/Users/Ricky/mashwork/wikiXmlParser/GOT_D3_TOC_Equal.xml";
 		//String query = "Game of Thrones (TV series)";
-		String query = "Anarchism";
+		String query = "Game of Thrones";
 		int step = 2;
 		
 		HashMap<String,Integer> list = new HashMap<String,Integer>();
@@ -39,7 +41,7 @@ public class test {
             writer.writeStartDocument();
             writer.writeStartElement("d");
         	
-            MyCallBackHandler MBH = new MyCallBackHandler(writer,list);
+            MyCallBackHandler MBH = new MyCallBackHandler(writer,list,step);
             
             //if you want to print the information to the screen, uncomment the following line
             //MBH.setPrintLink(true);
@@ -50,10 +52,14 @@ public class test {
                 
             long startTime = System.currentTimeMillis();
             
-            while(step-->0)
+            while(true)
             {
+            	if(MBH.timeToStop())
+            	{
+            		break;
+            	}
             	wxsp.parse();
-            	MBH.switchList();
+            	MyCallBackHandler.level++;
             	wxsp.setPageCallback(MBH);
             }
             writer.writeEndElement();

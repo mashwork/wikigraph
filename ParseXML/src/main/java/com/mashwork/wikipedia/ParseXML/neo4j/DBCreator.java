@@ -22,9 +22,9 @@ public class DBCreator {
 	public static void main(String[] args) throws Exception
 	{
 		//String DBDir = "/Users/Ricky/mashwork/AnarchismD2DB";
-		String DBDir = "/Users/Ricky/mashwork/GOT_D4_DB";
+		String DBDir = "/Users/Ricky/mashwork/GOT_D3_DB";
 		//String XMLDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/Anarchism_D2_TOC_Equal.xml";
-		String XMLDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/GOT_D4_TOC_Equal.xml";
+		String XMLDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_TOC_Equal.xml";
 		
 		//DBCreator DB = new DBCreator(DBDir);
 		
@@ -33,19 +33,23 @@ public class DBCreator {
         TocIndex = graphDb.index().forNodes( "Toc" );
         registerShutdownHook();
         
-		NodeElementParser NEP = new NodeElementParser(graphDb, nodeIndex,TocIndex);
-		LinkElementParser LEP = new LinkElementParser(graphDb, nodeIndex,TocIndex);
 		
 		//HierachyManager.Init();
 		
 		Transaction tx = graphDb.beginTx();
+		
+		NodeElementParser NEP = new NodeElementParser(graphDb, nodeIndex,TocIndex);
+		LinkElementParser LEP = new LinkElementParser(graphDb, nodeIndex,TocIndex,tx);
+		
+		
         try
         {
         	long startTime = System.currentTimeMillis();
         	
         	System.out.println("Creating tree Structure.");
         	NEP.parse(XMLDir);				//Generate tree structure first;
-        	System.out.println("Node counter" + NodeElementParser.counter);
+        	System.out.println("Node counter " + NodeElementParser.counter);
+        	System.out.println("Link counter " + NodeElementParser.links);
         	System.out.println();
         	System.out.println("Tree structure generated. Start to link the nodes....");
         	System.out.println();
