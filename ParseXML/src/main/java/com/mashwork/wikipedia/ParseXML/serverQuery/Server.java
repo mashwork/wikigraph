@@ -1,16 +1,16 @@
-package com.mashwork.wikipedia.ParseXML.query;
+package com.mashwork.wikipedia.ParseXML.serverQuery;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.*;
 import org.vertx.java.deploy.Verticle;
 
-import java.util.List;
 import java.util.Map;
 
 public class Server extends Verticle 
 {
   public void start() 
   {
+	
     HttpServer server = vertx.createHttpServer();
     Handler<HttpServerRequest> HD = new Handler<HttpServerRequest>()
     {
@@ -18,21 +18,17 @@ public class Server extends Verticle
 	    {
 	        Map<String, String> commands = request.params();
 	    	StringBuilder sb = new StringBuilder();
-	    	sb.append(ServerInfo.HelpInfo());
+	    	sb.append("Below is your query input:\n");
 	        for (Map.Entry<String, String> param: commands.entrySet()) 
 	        {
-	            sb.append(param.getKey()).append(":").append(param.getValue()).append("\n");
+	            sb.append(param.getKey()).append(":").append(param.getValue()).append("  ");
 	        }
+	        sb.append("\n");
+	    	sb.append(ServerInfo.HelpInfo());
+	    	sb.append("\nBelow is the result:\n");
+	        sb.append(ServerHandler.query(commands));
 	        
-	        
-	        String DBDir = "/Users/Ricky/mashwork/GOT_D3_DB";
-	    	WikiQuery wikiQuery = new WikiQuery(DBDir);
-	    	sb.append("DB set up. Start to search.\n");
-	    	List<String> names = wikiQuery.findPath("Game of Thrones","War of the Roses",20);
-	    	sb.append(wikiQuery.resultToString(names));
-	        
-		request.response.end(sb.toString()); 
-		//request.response.end("Hello World!");
+	        request.response.end(sb.toString()); 
 	    }
   };
   

@@ -1,10 +1,12 @@
 package com.mashwork.wikipedia.ParseXML.query;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Collections;
+import java.util.Map;
 
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.WildcardQuery;
@@ -33,20 +35,28 @@ public class WikiQuery {
 	private final GraphDatabaseService graphDb;
     private final Index<Node> nodeIndex;
     private final Index<Node> TocIndex;
-    private final int querySuggestionNumber = 30;
+    public final int DefaultQuerySuggestionNumber = 30;
     public final String USERNAME_KEY = "pageName";
 	public final String TOC_KEY = "TocName";
 	
 	public WikiQuery(String DBDir)
 	{
-		graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( DBDir );
+		Map<String, String> config = new HashMap<String, String>();
+		config.put( "read_only", "true" );
+		graphDb = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(
+		        DBDir )
+		        .setConfig( config )
+		        .newGraphDatabase();
+		
+		
+		//graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( DBDir );
         nodeIndex = graphDb.index().forNodes( "nodes" );
         TocIndex = graphDb.index().forNodes( "Toc" );
         registerShutdownHook();
 	}
 	
 	
-	private Traverser getCate(final Node node , int depth)
+	protected Traverser getCate(final Node node , int depth)
 	{
 	    TraversalDescription td = Traversal.description()
 	            .breadthFirst()
@@ -57,7 +67,7 @@ public class WikiQuery {
 	    return td.traverse( node );
 	}
 	
-	private Traverser getFathers(final Node node, int depth)
+	protected Traverser getFathers(final Node node, int depth)
 	{
 		TraversalDescription td = Traversal.description()
 	            .depthFirst()
@@ -111,6 +121,7 @@ public class WikiQuery {
 	public List<List<String>> findFathers(String nodeName, int maxDepth, boolean pageNodeOnly)
 	{
 		List<Path> fatherPaths = findFatherPaths(nodeName, maxDepth);
+		if(fatherPaths==null) return null;
 		List<List<String>> result = new ArrayList<List<String>>();
 		if(pageNodeOnly)
 		{
@@ -132,7 +143,7 @@ public class WikiQuery {
 		return result;
 	}
 	
-	private Expander setAllExpander()
+	protected Expander setAllExpander()
 	{
 		Expander expander = Traversal.expanderForAllTypes();
 		return expander;
@@ -240,7 +251,16 @@ public class WikiQuery {
         Node node = nodeIndex.get(USERNAME_KEY, title).getSingle();
         if (node == null) {
         	//node = TocIndex.get(TOC_KEY,title).getSingle();
-        	node = TocIndex.get(TOC_KEY,title).next();
+        	Iterator<Node> it = TocIndex.get(TOC_KEY,title);
+        	if(it.hasNext())
+        	{
+        		node = it.next();
+        	}
+        	else 
+        	{
+				node = null;
+			}
+        	//node = TocIndex.get(TOC_KEY,title).next();
 //        	if(node != null)
 //        	{
 //        		System.out.println("UserName: "+node.getProperty(USERNAME_KEY).toString());
@@ -325,7 +345,7 @@ public class WikiQuery {
 		return nodes;
 	}
 	
-	private Traverser getTocNodes(final Node node)
+	protected Traverser getTocNodes(final Node node)
 	{
 		TraversalDescription td = Traversal.description()
 	            .depthFirst()
@@ -346,7 +366,7 @@ public class WikiQuery {
 		return result;
 	}
 	
-	private Traverser getLink(final Node node)
+	protected Traverser getLink(final Node node)
 	{
 		TraversalDescription td = Traversal.description()
 	            .depthFirst()
@@ -358,7 +378,7 @@ public class WikiQuery {
 	}
 	
 	//This is used to determine how many links are under these nodes.
-	private int getLinkNumber(List<Node> nodes)
+	protected int getLinkNumber(List<Node> nodes)
 	{
 		int result = 0;
 		for(Node node: nodes)
@@ -386,7 +406,7 @@ public class WikiQuery {
 		return new Pair<Integer,Integer>(TocNumber,LinkNumber);
 	}
 	
-	private Traverser getRootNode(final Node node)
+	protected Traverser getRootNode(final Node node)
 	{
 		TraversalDescription td = Traversal.description()
 	            .depthFirst()
@@ -416,7 +436,7 @@ public class WikiQuery {
 		}
 	}
 	
-    private List<String> extractTitles(Path path) {
+	protected List<String> extractTitles(Path path) {
         if (path == null) {
             return null;
         }
@@ -452,9 +472,9 @@ public class WikiQuery {
     	String pageTitle = FormalString.formalize(nodeName);
     	String tocTitle = FormalString.capitalize(nodeName);
     	
-    	System.out.println("\n\nThe original name: "+nodeName);
-    	System.out.println("The formal page name: "+pageTitle);
-    	System.out.println("The formal TOC name: "+tocTitle+"\n");
+//    	System.out.println("\n\nThe original name: "+nodeName);
+//    	System.out.println("The formal page name: "+pageTitle);
+//    	System.out.println("The formal TOC name: "+tocTitle+"\n");
     	
     	IndexHits<Node> hits;
     	List<String> result = new ArrayList<String>();
@@ -498,6 +518,24 @@ public class WikiQuery {
     	else 
     	{
 	    	System.out.println("Here is the query suggestion for \""+nodeName+"\": " +
+	    			"(Top "+DefaultQuerySuggestionNumber+" suggestions will be returned)");
+    		for(int i = 0; i < DefaultQuerySuggestionNumber && i < suggestions.size();i++)
+	    	{
+	    		System.out.println(i+1 +". "+suggestions.get(i).getFirst());
+	    	}
+    	}
+    }
+    
+    public void printQuerySuggestion(String nodeName, int querySuggestionNumber)
+    {
+    	List<Pair<String,Integer>> suggestions = querySuggestion(nodeName);
+    	if(suggestions.isEmpty())
+    	{
+    		System.out.println("Can not find query suggestion for \""+nodeName+"\"!");
+    	}
+    	else 
+    	{
+	    	System.out.println("Here is the query suggestion for \""+nodeName+"\": " +
 	    			"(Top "+querySuggestionNumber+" suggestions will be returned)");
     		for(int i = 0; i < querySuggestionNumber && i < suggestions.size();i++)
 	    	{
@@ -506,7 +544,7 @@ public class WikiQuery {
     	}
     }
     
-    private List<Pair<String,Integer>> sortQuerySuggestion(String query,List<String> suggestions)
+    protected List<Pair<String,Integer>> sortQuerySuggestion(String query,List<String> suggestions)
     {
     	LevenshteinDistance<Character> levDistance = new LevenshteinDistance<Character>();
     	List<Pair<String,Integer>> result = new LinkedList<Pair<String,Integer>>();
@@ -547,37 +585,8 @@ public class WikiQuery {
     	}
     }
     
-    public String resultToString(List<String> path)
-    {
-    	StringBuffer sb = new StringBuffer();
-    	if(path!=null)
-    	{
-    		for(int i = 0;i < path.size()-1;i++)
-    		{
-    			sb.append(path.get(i)+"->");
-    		}
-    		sb.append(path.get(path.size()-1));
-    	}
-    	return sb.toString();
-    }
-    
-    public String allResultToString(List<List<String>> paths)
-    {
-    	StringBuffer sb = new StringBuffer();
-    	int i = 1;
-    	if(paths!=null)
-    	{
-	    	for(List<String> path : paths)
-	    	{
-	    		sb.append(i++ +". ");
-	    		sb.append(resultToString(path));
-	    	}
-	    	sb.append("\n");
-    	}
-    	return sb.toString();
-    }
 
-    private boolean isCategoryLink(String value)
+    protected boolean isCategoryLink(String value)
 	{
 		if(value.contains("Category:"))
 			return true;
@@ -586,12 +595,12 @@ public class WikiQuery {
 	}
     
     
-	private void shutdown()
+    protected void shutdown()
     {
         graphDb.shutdown();
     }
 	
-	private void registerShutdownHook()
+    protected void registerShutdownHook()
     {
         Runtime.getRuntime().addShutdownHook( new Thread()
         {

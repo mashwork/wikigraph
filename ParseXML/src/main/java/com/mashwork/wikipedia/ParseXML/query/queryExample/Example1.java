@@ -34,7 +34,7 @@ public class Example1
 		
 		System.out.println("All the Father node paths: (Degree 1)");
 		//List<List<String>> paths = wikiQuery.findShortestPaths("Sean Bean","Kit Harington",20);
-		List<List<String>> fatherPaths = wikiQuery.findFathers("Catelyn Stark",1,false);
+		List<List<String>> fatherPaths = wikiQuery.findFathers("Catelyn Stark1",1,false);
 		wikiQuery.printAllPaths(fatherPaths);
 		
 		System.out.println("All the Father node paths: (Degree 2)");
