@@ -18,12 +18,15 @@ public abstract class ElementParser {
 	protected   GraphDatabaseService graphDb;
     protected  Index<Node> nodeIndex;
     protected  Index<Node> TocIndex;
+    protected  Index<Node> fullTextIndex;
 	
-	public ElementParser(GraphDatabaseService graphDb, Index<Node> nodeIndex, Index<Node> TocIndex)
+	public ElementParser(GraphDatabaseService graphDb, Index<Node> nodeIndex, 
+			Index<Node> TocIndex, Index<Node> fullTextIndex)
 	{
 		this.graphDb = graphDb;
 		this.nodeIndex = nodeIndex;
 		this.TocIndex = TocIndex;
+		this.fullTextIndex = fullTextIndex;
 	}
 	
 	public void parse(String fileName) throws IOException, XMLStreamException {

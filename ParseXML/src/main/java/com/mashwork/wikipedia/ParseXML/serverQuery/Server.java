@@ -24,7 +24,7 @@ public class Server extends Verticle
 	            sb.append(param.getKey()).append(":").append(param.getValue()).append("  ");
 	        }
 	        sb.append("\n");
-	    	sb.append(ServerInfo.HelpInfo());
+	    	sb.append(ServerInfo.HelpInfo("localhost","8080"));
 	    	sb.append("\nBelow is the result:\n");
 	        sb.append(ServerHandler.query(commands));
 	        

@@ -1,12 +1,16 @@
 package com.mashwork.wikipedia.ParseXML.neo4j;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Stack;
 import org.neo4j.graphdb.Node;
 
 public class HierachyManager {
 	static HashMap<String,Integer> Order;
 	static Stack<Pair<String,Node>> stack;
+	final static String USERNAME_KEY = "pageName";
+	final static String TOC_KEY = "TocName";
 	
 	private static int compare(String level)
 	{
@@ -53,6 +57,32 @@ public class HierachyManager {
 		}
 		return stack.peek().getSecond();
 	}
+	
+	public static String getPrePath()
+	{
+		if(isPageNode(stack.peek().getSecond()))
+		{
+			return stack.peek().getSecond().getProperty(USERNAME_KEY).toString();
+		}
+		else
+		{
+			return stack.peek().getSecond().getProperty(TOC_KEY).toString();
+		}
+	}
+	
+	public static boolean isPageNode(Node node)
+    {
+    	List<String> nameList = (List<String>)node.getPropertyKeys();
+//    	for(String key:nameList)
+//    	{
+//    		System.out.println(key);
+//    	}
+    	if(nameList.contains(TOC_KEY))
+    		return false;
+    	else {
+			return true;
+		}
+    }
 	
 	//public static void Init()
 	static{

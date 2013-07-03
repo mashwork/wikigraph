@@ -1,15 +1,21 @@
 package com.mashwork.wikipedia.ParseXML.neo4j;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.SimpleAnalyzer;
+import org.apache.lucene.util.Version;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.helpers.collection.MapUtil;
 
 public class DBCreator {
 	private  static GraphDatabaseService graphDb;
     private  static Index<Node> nodeIndex;
     private  static Index<Node> TocIndex;
+    private  static Index<Node> fullTextIndex;
 	
     //private static final String USERNAME_KEY = "nodename";
     
@@ -21,16 +27,23 @@ public class DBCreator {
 //	}
 	public static void main(String[] args) throws Exception
 	{
-		//String DBDir = "/Users/Ricky/mashwork/AnarchismD2DB";
-		String DBDir = "/Users/Ricky/mashwork/GOT_D3_DB";
-		//String XMLDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/Anarchism_D2_TOC_Equal.xml";
-		String XMLDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_TOC_Equal.xml";
+		String DBDir = "/Users/Ricky/mashwork/AnarchismD2DB";
+		//String DBDir = "/Users/Ricky/mashwork/GOT_D3_DB_LUCENE_TEST";
+		String XMLDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/Anarchism_D1_TOC_Equal.xml";
+		//String XMLDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_TOC_Equal.xml";
 		
 		//DBCreator DB = new DBCreator(DBDir);
 		
 		graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( DBDir );
         nodeIndex = graphDb.index().forNodes( "nodes" );
         TocIndex = graphDb.index().forNodes( "Toc" );
+        
+        Analyzer myAnalyzer = new SimpleAnalyzer(Version.LUCENE_36);
+        String className = myAnalyzer.getClass().getName();
+        myAnalyzer.close();
+        fullTextIndex = graphDb.index().forNodes("full",
+        		MapUtil.stringMap(IndexManager.PROVIDER,"lucene","type", "fulltext",
+        				"to_lower_case", "true","analyzer",className));
         registerShutdownHook();
         
 		
@@ -38,8 +51,8 @@ public class DBCreator {
 		
 		Transaction tx = graphDb.beginTx();
 		
-		NodeElementParser NEP = new NodeElementParser(graphDb, nodeIndex,TocIndex);
-		LinkElementParser LEP = new LinkElementParser(graphDb, nodeIndex,TocIndex,tx);
+		NodeElementParser NEP = new NodeElementParser(graphDb, nodeIndex,TocIndex, fullTextIndex, tx);
+		LinkElementParser LEP = new LinkElementParser(graphDb, nodeIndex,TocIndex, fullTextIndex, tx);
 		
 		
         try

@@ -92,6 +92,8 @@ public class Example1
 			}
 		}
 		
+		wikiQuery.tryQuery();
+		
 //		System.out.println();
 //		String name = "Game of Thrones";
 //		Pair<Integer,Integer> numbers = wikiQuery.getComponentNumbers(name);

@@ -9,7 +9,7 @@ import javax.xml.stream.XMLOutputFactory;
 //import org.codehaus.stax2.XMLOutputFactory2;
 //import org.codehaus.stax2.*;
 
-public class test {
+public class ExtractXML {
 	
 	public static void main(String[] args)
 	{
@@ -23,10 +23,10 @@ public class test {
 		String dir = "/Users/Ricky/mashwork/wikidump/new/enwiki-20130604-pages-articles.xml";
 		//String dir = "/Users/Ricky/mashwork/wikidump/old/Mytest.xml";
 		//String outputFile = "/Users/Ricky/mashwork/wikiXmlParser/test.xml";
-		String outputFile = "/Users/Ricky/mashwork/wikiXmlParser/GOT_D3_TOC_Equal.xml";
+		String outputFile = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_TOC_Equal2.xml";
 		//String query = "Game of Thrones (TV series)";
 		String query = "Game of Thrones";
-		int step = 2;
+		int step = 3;
 		
 		HashMap<String,Integer> list = new HashMap<String,Integer>();
         list.put(query, 0);

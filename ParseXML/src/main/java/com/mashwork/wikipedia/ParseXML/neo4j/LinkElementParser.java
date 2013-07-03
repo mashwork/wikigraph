@@ -20,9 +20,10 @@ public class LinkElementParser extends ElementParser{
 	
 	static Transaction tx;
 	
-	public LinkElementParser(GraphDatabaseService graphDb, Index<Node> nodeIndex, Index<Node> TocIndex,Transaction tx)
+	public LinkElementParser(GraphDatabaseService graphDb, Index<Node> nodeIndex,
+			Index<Node> TocIndex, Index<Node> fullTextIndex, Transaction tx)
 	{
-		super(graphDb,nodeIndex,TocIndex);
+		super(graphDb,nodeIndex,TocIndex,fullTextIndex);
 		LinkElementParser.tx = tx;
 	}
 	
@@ -49,10 +50,10 @@ public class LinkElementParser extends ElementParser{
 		}
 		else if(!element.equals("l"))
 		{
-			//Node fatherNode = HierachyManager.findParentNode(element);
+			HierachyManager.findParentNode(element);
 			//Node node = TOCLocator.findNextToc(fatherNode,value);
 			Node node = findNextTOC(value);
-			if(node == null) System.out.println("findNextTOC is null");
+			if(node == null) System.out.println("findNextTOC is null" +" Value:"+value);
 			Pair<String,Node> pair = new Pair<String,Node>(element,node);
 			HierachyManager.MyPop(pair);
 			HierachyManager.MyPush(pair);	
@@ -135,6 +136,8 @@ public class LinkElementParser extends ElementParser{
         Node node = graphDb.createNode();
         node.setProperty( USERNAME_KEY, pageName );
         nodeIndex.add( node, USERNAME_KEY, pageName );
+        
+        fullTextIndex.add(node,USERNAME_KEY,pageName);
         return node;
     }
 	
@@ -177,18 +180,11 @@ public class LinkElementParser extends ElementParser{
 	}
 	private Node findNextTOC(String queryName)
 	{
-		String TocName = fatherName +"#"+ queryName;
+		String TocName = HierachyManager.getPrePath() +"#"+ queryName;
+		//System.out.println(TocName);
 		//System.out.println("TocName is :" + TocName);
-		Iterator<Node> it = TocIndex.get(TOC_KEY,TocName);
-		if(TocIndex.get(TOC_KEY,TocName).size() > 1)
-		{
-			//while(it.hasNext()) System.out.println(it.next().getProperty(TOC_KEY,TocName));
-			return it.next();
-		}
-		else
-		{
-			return TocIndex.get(TOC_KEY,TocName).getSingle();
-		}
+		//Iterator<Node> it = TocIndex.get(TOC_KEY,TocName);
+		return TocIndex.get(TOC_KEY,TocName).getSingle();
 		//return null;
 	}
 	

@@ -14,8 +14,8 @@ import com.mashwork.wikipedia.ParseXML.query.WikiQuery;
 
 public class WikiServerQuery extends WikiQuery
 {
-	public static boolean startNodeNotFound;
-	public static boolean endNodeNotFound;
+	public boolean startNodeNotFound;
+	public boolean endNodeNotFound;
 	public WikiServerQuery(String DBDir)
 	{
 		super(DBDir);

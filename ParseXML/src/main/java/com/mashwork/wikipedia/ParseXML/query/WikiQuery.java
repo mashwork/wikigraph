@@ -8,8 +8,20 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Map;
 
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.SimpleAnalyzer;
+import org.apache.lucene.analysis.WhitespaceAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryParser.MultiFieldQueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.PhraseQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.util.Version;
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
 import org.neo4j.graphdb.Direction;
@@ -35,9 +47,11 @@ public class WikiQuery {
 	private final GraphDatabaseService graphDb;
     private final Index<Node> nodeIndex;
     private final Index<Node> TocIndex;
-    public final int DefaultQuerySuggestionNumber = 30;
+    private final Index<Node> fullTextIndex;
+    public final int DefaultQuerySuggestionNumber = 60;
     public final String USERNAME_KEY = "pageName";
 	public final String TOC_KEY = "TocName";
+	public final String TEXT_KEY = "fullText";
 	
 	public WikiQuery(String DBDir)
 	{
@@ -52,6 +66,7 @@ public class WikiQuery {
 		//graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( DBDir );
         nodeIndex = graphDb.index().forNodes( "nodes" );
         TocIndex = graphDb.index().forNodes( "Toc" );
+        fullTextIndex= graphDb.index().forNodes("full");
         registerShutdownHook();
 	}
 	
@@ -466,6 +481,93 @@ public class WikiQuery {
 		}
     }
     
+    
+    public void tryQuery()
+    {
+    	IndexHits<Node> hits;
+    	
+    	String query = "Game of Thrones Tyrion Lannister Robb Stark";
+    	hits = fullTextIndex.query(USERNAME_KEY,query);
+        System.out.println("Search by page title. Result for query: "+ query);
+        int i = 1;
+    	for(Node node:hits)
+    	{
+    		if(i>10) break;
+    		System.out.println(i+++": "+node.getProperty(USERNAME_KEY).toString());
+    	}
+    	System.out.println("\n");
+    	
+    	query = "Game of Thrones Plot";
+    	hits = fullTextIndex.query(TOC_KEY,query);
+    	System.out.println("Search by TOC title. Result for query: "+ query);
+        i = 1;
+    	for(Node node:hits)
+    	{
+    		if(i>10) break;
+    		System.out.println(i+++": "+node.getProperty(TOC_KEY).toString());
+    	}
+    	System.out.println("\n");
+
+    	
+    	//List<String> result = new ArrayList<String>();
+    	//Query query1 = new WildcardQuery( new Term( USERNAME_KEY, "Game of*" ) ) ;
+//    	hits = nodeIndex.query("pageName:*Game* AND pageName:*Thrones* AND pageName:*TV*");
+//    	System.out.println("The result");
+//    	for(Node node:hits)
+//    	{
+//    		System.out.println(node.getProperty(USERNAME_KEY).toString());
+//    	}
+    	
+    	Query queryLucene;
+        //要查找的字符串数组
+        String [] stringQuery={"Game of thrones", "Characters"};	//,"Thrones"
+        //待查找字符串对应的字段
+        String[] fields={USERNAME_KEY,TOC_KEY};		//,USERNAME_KEY
+        //Occur.MUST表示对应字段必须有查询值， Occur.MUST_NOT 表示对应字段必须没有查询值
+        Occur[] occ={Occur.SHOULD,Occur.SHOULD};
+        Analyzer ana = new SimpleAnalyzer(Version.LUCENE_36);
+        try
+        {
+        	queryLucene=MultiFieldQueryParser.parse(Version.LUCENE_36,stringQuery,fields,occ,ana);
+        	i = 1;
+	    	hits = fullTextIndex.query(queryLucene);
+	    	System.out.println("Multifiled query:");
+	    	for(Node node:hits)
+	    	{
+	    		if(isPageNode(node))
+	    		{
+	    			System.out.println(node.getProperty(USERNAME_KEY).toString());
+	    		}
+	    		else {
+	    			 System.out.println(node.getProperty(TOC_KEY).toString());
+				}
+	    		if(i++>30) break;
+	    	}
+    	
+        }catch(Exception e)
+        {
+        	System.out.println(e);
+        }
+        
+        
+//        Term t1 = new Term(USERNAME_KEY,"Game");
+//        //Term t2 = new Term(USERNAME_KEY,"Thrones");
+//        
+//        TermQuery tq1 = new TermQuery(t1);
+//        //TermQuery tq2 = new TermQuery(t2);
+//        
+//        BooleanQuery bq = new BooleanQuery();
+//        bq.add(tq1,Occur.MUST);
+//        //bq.add(tq2,Occur.MUST);
+//        
+//        hits = nodeIndex.query(bq);
+//        System.out.println("The result 3:");
+//    	for(Node node:hits)
+//    	{
+//    		System.out.println(node.getProperty(USERNAME_KEY).toString());
+//    	}
+    }
+    
     public List<Pair<String,Integer>> querySuggestion(String nodeName)
     {
     	//String name = captalize(nodeName);
@@ -524,6 +626,39 @@ public class WikiQuery {
 	    		System.out.println(i+1 +". "+suggestions.get(i).getFirst());
 	    	}
     	}
+    }
+    
+    public List<Node> luceneQuerySuggestion(String name)
+    {
+    	IndexHits<Node> hits;
+    	List<Node> result = new ArrayList<Node>();
+    	Query queryLucene;
+        //要查找的字符串数组
+        String [] stringQuery={name};	//,"Thrones"
+        //待查找字符串对应的字段
+        String[] fields={TEXT_KEY};		//,USERNAME_KEY
+        //Occur.MUST表示对应字段必须有查询值， Occur.MUST_NOT 表示对应字段必须没有查询值
+        Occur[] occ={Occur.SHOULD};
+        Analyzer ana = new SimpleAnalyzer(Version.LUCENE_36);
+        try
+        {
+        	queryLucene=MultiFieldQueryParser.parse(Version.LUCENE_36,stringQuery,fields,occ,ana);
+        	int i = 1;
+	    	hits = fullTextIndex.query(queryLucene);
+	    	System.out.println("Multifiled query:");
+	    	for(Node node:hits)
+	    	{
+	    		if(i++ > DefaultQuerySuggestionNumber) break;
+	    		result.add(node);
+	    	}
+    	
+        }catch(Exception e)
+        {
+        	System.out.println(e);
+        }
+        return result;
+        
+        
     }
     
     public void printQuerySuggestion(String nodeName, int querySuggestionNumber)

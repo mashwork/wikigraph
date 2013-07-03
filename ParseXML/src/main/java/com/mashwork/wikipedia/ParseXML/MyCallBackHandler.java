@@ -43,7 +43,7 @@ public class MyCallBackHandler implements PageCallbackHandler {
         //list2.put("Total_Page_to_Process", 0);
 	}
 	
-	private String processTitle(String input)
+	public String processTitle(String input)
 	{
 		String[] temp = input.split("\n");
 		return temp[0];
@@ -134,7 +134,7 @@ public class MyCallBackHandler implements PageCallbackHandler {
 //    	this.list2 = new HashMap<String,Integer>();
 //    }
     
-	private void StructureRecursion(List<Section> sectionList, String l) throws XMLStreamException
+	public void StructureRecursion(List<Section> sectionList, String l) throws XMLStreamException
 	{
 		int k = 1;
 		for(Section section:sectionList)
@@ -245,7 +245,7 @@ public class MyCallBackHandler implements PageCallbackHandler {
 			return false;
 	}
 	
-	private boolean isAnchorLink(String link)
+	public boolean isAnchorLink(String link)
 	{
 		if(link.contains("#"))
 			return true;

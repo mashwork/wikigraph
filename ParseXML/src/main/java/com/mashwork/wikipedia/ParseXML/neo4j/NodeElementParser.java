@@ -4,18 +4,24 @@ import java.text.DecimalFormat;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
 public class NodeElementParser extends ElementParser{
 	final String USERNAME_KEY = "pageName";
 	final String TOC_KEY = "TocName";
+
 	static String fatherName;
 	final static int pageCount = 25579;
 	static int links = 0;
 	static int counter = 0;
-	public NodeElementParser(GraphDatabaseService graphDb, Index<Node> nodeIndex, Index<Node> TocIndex)
+	static Transaction tx;
+	
+	public NodeElementParser(GraphDatabaseService graphDb, Index<Node> nodeIndex,
+			Index<Node> TocIndex, Index<Node> fullTextIndex, Transaction tx)
 	{
-		super(graphDb,nodeIndex,TocIndex);
+		super(graphDb,nodeIndex,TocIndex, fullTextIndex);
+		NodeElementParser.tx = tx;
 	}
 	
 	@Override
@@ -38,6 +44,13 @@ public class NodeElementParser extends ElementParser{
 			HierachyManager.MyPush(pair);
 			fatherName = node.getProperty(USERNAME_KEY).toString();
 			//System.out.println("Create node: " +value);
+			
+			if ( counter > 0 && counter % 10000 == 0 ) {
+	            tx.success();
+	            tx.finish();
+	            tx = graphDb.beginTx();
+	        }
+			
 			DecimalFormat df = new DecimalFormat("0.00");
 			double percentage = ((double)counter++/pageCount*100);
 			if(counter%(pageCount/100) == 0 )
@@ -50,7 +63,8 @@ public class NodeElementParser extends ElementParser{
 		{
 			Node fatherNode = HierachyManager.findParentNode(element);
 			//String fatherName = fatherNode.getProperty(USERNAME_KEY).toString();
-			Node node = createTocNode(value,fatherName);
+			//Node node = createTocNode(value,fatherName);
+			Node node = createTocNode(value);
 			Pair<String,Node> pair = new Pair<String,Node>(element,node);
 			//HierachyManager.MyPop(pair);
 			
@@ -67,15 +81,27 @@ public class NodeElementParser extends ElementParser{
 	}
 	
 	//This is for Table of Content nodes.
-	private Node createTocNode(String pageName, String fatherName)
+	private Node createTocNode(String pageName)
 	{
-		Node node = graphDb.createNode();
-        node.setProperty( USERNAME_KEY, pageName );
-        String TocName = fatherName + "#"+pageName;
-        node.setProperty( TOC_KEY, TocName);
-        //if(fatherName.equals("Amsterdam")) System.out.println("The stored name: "+TocName);
-        TocIndex.add(node,TOC_KEY,TocName);
-        return node;
+		String prePath = HierachyManager.getPrePath();
+		Node exist = TocIndex.get(TOC_KEY,prePath+"#"+pageName).getSingle();
+		if(exist!=null)
+		{
+			return exist;
+		}
+		else
+		{
+			Node node = graphDb.createNode();
+	        node.setProperty( USERNAME_KEY, pageName );
+	        String TocName = prePath + "#"+pageName;
+	        //System.out.println(TocName);
+	        node.setProperty( TOC_KEY, TocName);
+	        //if(fatherName.equals("Amsterdam")) System.out.println("The stored name: "+TocName);
+	        TocIndex.add(node,TOC_KEY,TocName);
+	        
+	        fullTextIndex.add(node,TOC_KEY,TocName.replace('#',' '));
+	        return node;
+		}
 	}
 	
 	//This is for page nodes.
@@ -84,6 +110,8 @@ public class NodeElementParser extends ElementParser{
         Node node = graphDb.createNode();
         node.setProperty( USERNAME_KEY, pageName );
         nodeIndex.add( node, USERNAME_KEY, pageName );
+        
+        fullTextIndex.add(node,USERNAME_KEY,pageName);
         return node;
     }
 	
