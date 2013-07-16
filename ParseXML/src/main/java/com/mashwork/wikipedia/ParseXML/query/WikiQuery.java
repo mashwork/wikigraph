@@ -262,7 +262,7 @@ public class WikiQuery {
 		}
 	}
 	
-	public Node findPage(String title) {
+	public Node findPage(String title) {	
         Node node = nodeIndex.get(USERNAME_KEY, title).getSingle();
         if (node == null) {
         	//node = TocIndex.get(TOC_KEY,title).getSingle();
@@ -474,7 +474,7 @@ public class WikiQuery {
     public boolean isPageNode(Node node)
     {
     	List<String> nameList = (List<String>)node.getPropertyKeys();
-    	if(nameList.size()>1)
+    	if(nameList.contains(TOC_KEY))
     		return false;
     	else {
 			return true;

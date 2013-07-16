@@ -28,7 +28,7 @@ public class DBCreator {
 	public static void main(String[] args) throws Exception
 	{
 		String DBDir = "/Users/Ricky/mashwork/AnarchismD2DB";
-		//String DBDir = "/Users/Ricky/mashwork/GOT_D3_DB_LUCENE_TEST";
+		//String DBDir = "/Users/Ricky/mashwork/GOT_D3_DB_LUCENE_Title";
 		String XMLDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/Anarchism_D1_TOC_Equal.xml";
 		//String XMLDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_TOC_Equal.xml";
 		

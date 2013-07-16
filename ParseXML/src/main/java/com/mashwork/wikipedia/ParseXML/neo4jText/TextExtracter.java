@@ -1,3 +1,6 @@
+//The following code is used for adding text info to node and build lucene index after we have the graphDB
+//with basic structure.
+
 package com.mashwork.wikipedia.ParseXML.neo4jText;
 
 import com.mashwork.wikipedia.ParseXML.MyCallBackHandler;

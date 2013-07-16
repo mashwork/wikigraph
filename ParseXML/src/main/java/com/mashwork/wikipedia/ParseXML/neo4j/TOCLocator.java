@@ -3,6 +3,8 @@ package com.mashwork.wikipedia.ParseXML.neo4j;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.Vector;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -14,7 +16,7 @@ import org.neo4j.kernel.Traversal;
 
 public class TOCLocator {
 	final static String USERNAME_KEY = "pageName";
-	static int linkNotFound = 0;
+	public static int linkNotFound = 0;
 	private static Traverser getNode(final Node node , int depth)
 	{
 	    TraversalDescription td = Traversal.description()
@@ -113,4 +115,5 @@ public class TOCLocator {
 		//System.out.println("Warning: Case II. Page has been found. But TOC of this page is not stored!");
 		return null;
 	}
+	
 }

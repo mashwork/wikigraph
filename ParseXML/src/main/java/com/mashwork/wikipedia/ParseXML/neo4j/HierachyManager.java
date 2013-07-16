@@ -9,8 +9,44 @@ import org.neo4j.graphdb.Node;
 public class HierachyManager {
 	static HashMap<String,Integer> Order;
 	static Stack<Pair<String,Node>> stack;
+	static Stack<Pair<String,String>> pathStack;
 	final static String USERNAME_KEY = "pageName";
 	final static String TOC_KEY = "TocName";
+	
+	public static void tractPath(Pair<String,String> pair)
+	{
+		if(pathStack.isEmpty())
+		{
+			pathStack.push(pair);
+		}
+		else 
+		{
+			String topElementOrder = pathStack.peek().getFirst();
+			String newElementOrder = pair.getFirst();
+			if(Order.get(newElementOrder) - Order.get(topElementOrder) <=0)
+			{
+				pathStack.pop();
+				tractPath(pair);
+			}
+			else
+			{
+				pathStack.push(pair);
+			}
+		}
+	}
+	
+	public static String getPath()
+	{
+		Iterator<Pair<String,String>> it = pathStack.iterator();
+		StringBuilder sb = new StringBuilder();
+		while(it.hasNext())
+		{
+			sb.append(it.next().getSecond()+"#");
+		}
+		String result = sb.toString();
+		if(result==null || result.equals("")) return null;
+		return result.substring(0, result.length()-1);
+	}
 	
 	private static int compare(String level)
 	{
@@ -99,6 +135,7 @@ public class HierachyManager {
 		Order.put("l",10);
 		
 		stack  = new Stack<Pair<String,Node>>();
+		pathStack = new Stack<Pair<String,String>>();
 	}
 	
 }
