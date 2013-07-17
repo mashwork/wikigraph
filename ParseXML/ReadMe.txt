@@ -1,4 +1,10 @@
-This project is used for extracting page titles, links and structure(table of content) from wiki dump. Before you run the code, you need to make sure that you have already downloaded the dump file.
+Before you run the code, you need to make sure that you have already downloaded the dump file.
+
+Notice: There are some redundant code in my project. Packages ParseXML, ParseXML.GenerateGraph and ParseXML.neo4j are rarely used. The basic schema for this project is: 1)run ParallelXML.DumpDevider first to divide the wiki dump into several parts so that we can later analyze the dump in parallel. 2)run ParallelXML.ParallelAnalyzer to create simplified wiki-structure xml file containing title, table of content and link information only. 3) based on the structure xml file, run ParallelXML.GraphCreator to insert nodes and links into neo4j.
+
+you can try some query by calling the example methods in ParseXML.query.queryExample.
+
+2 http io are provided: netty and vertex. netty is recommended. Code for netty is in ParseXML.serverNetty
 
 1) Regarding the dump file: You can download it here:
 	http://dumps.wikimedia.org/backup-index.html

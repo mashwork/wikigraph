@@ -1,23 +1,14 @@
 package com.mashwork.wikipedia.ParseXML.SmallPortion;
 //import wikipediaParser.*;
-import edu.jhu.nlp.wikipedia.*;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
-import javax.xml.stream.XMLStreamWriter;
-import javax.xml.stream.XMLOutputFactory;
-
-import com.mashwork.wikipedia.ParseXML.MyCallBackHandler;
 
 //import org.codehaus.stax2.XMLOutputFactory2;
 //import org.codehaus.stax2.*;

@@ -208,20 +208,20 @@ public class LinkElementCreatorNotBatch implements PageCallbackHandler
 							linkName = toNormalLink(linkName);
 							
 							Node parentNode = retrieveNode(HierachyManager.getPath());
-							//Node childNode = retrieveNode(linkName);
+							Node childNode = retrieveNode(linkName);
 
-//							if(isAnchorLink(linkName))
-//							{	
-//								createLink(parentNode,childNode,RelTypes.ANCHOR);
-//							}
-//							else if(isCategoryLink(linkName))
-//							{
-//								createLink(parentNode,childNode,RelTypes.CATEGORY);
-//							}
-//							else
-//							{
-//								createLink(parentNode,childNode,RelTypes.INTERNAL);
-//							}
+							if(isAnchorLink(linkName))
+							{	
+								createLink(parentNode,childNode,RelTypes.ANCHOR);
+							}
+							else if(isCategoryLink(linkName))
+							{
+								createLink(parentNode,childNode,RelTypes.CATEGORY);
+							}
+							else
+							{
+								createLink(parentNode,childNode,RelTypes.INTERNAL);
+							}
 							linkCount++;
 						}
 					}

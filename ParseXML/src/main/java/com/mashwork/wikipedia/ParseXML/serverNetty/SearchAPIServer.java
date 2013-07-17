@@ -1,8 +1,6 @@
 package com.mashwork.wikipedia.ParseXML.serverNetty;
 
-import java.io.FileInputStream;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.concurrent.Executors;
 
 import joptsimple.OptionParser;
@@ -22,7 +20,6 @@ import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.Yaml;
 
 import com.mashwork.wikipedia.ParseXML.serverQuery.WikiServerQuery;
 
@@ -36,7 +33,7 @@ public class SearchAPIServer {
     private ChannelGroup allChannels;
     private WikiServerQuery wikiServerQuery;
 
-    @SuppressWarnings("unchecked")
+    //@SuppressWarnings("unchecked")
 	public SearchAPIServer(String[] args) throws Exception {
     	OptionParser parser = new OptionParser();
     	OptionSpec<String> input =

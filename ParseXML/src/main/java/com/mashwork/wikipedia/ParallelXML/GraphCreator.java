@@ -93,9 +93,9 @@ public class GraphCreator
     	LEP.parse(XMLDir);
     	tx.finish();
     	inserter.shutdown();
-    	System.out.println("Node counter " + LEP.counter);
+    	System.out.println("Link counter " + LEP.linkCount);
     	long elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
-        System.out.println("Totally "+elapsedSeconds+" seconds used to put pages and build lucene text into neo4j.");
+        System.out.println("Totally "+elapsedSeconds+" seconds used to create links into neo4j.");
         shutdown();
     }
     

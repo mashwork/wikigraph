@@ -5,15 +5,15 @@ import java.io.FileOutputStream;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
-import com.mashwork.wikipedia.ParseXML.MyCallBackHandler;
+//import com.mashwork.wikipedia.ParseXML.MyCallBackHandler;
 
 import edu.jhu.nlp.wikipedia.WikiXMLParser;
 import edu.jhu.nlp.wikipedia.WikiXMLParserFactory;
 
 public class ParallelAnalyzer extends Thread
 {
-	static String DumpDir;
-	static String XMLDir;
+	static String DumpDirPrefix;
+	static String XMLDirPrefix;
 	static int counter = 1;
 	static int totalPortionNumbers;
 	public void run()
@@ -40,12 +40,12 @@ public class ParallelAnalyzer extends Thread
 	
 	public synchronized String getSpecificDumpDir()
 	{
-		return DumpDir + "-"+ counter +".xml";
+		return DumpDirPrefix + "-"+ counter +".xml";
 	}
 	
 	public synchronized String getSpecificXMLDir()
 	{
-		return XMLDir + "-"+ counter +"-structure.xml";
+		return XMLDirPrefix + "-"+ counter +"-structure.xml";
 	}
 	
 	public synchronized int getCounter()
@@ -76,18 +76,18 @@ public class ParallelAnalyzer extends Thread
             
             long elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
             
-            System.out.println("Totally "+MyCallBackHandler.pageCount+" pages  crawled. Totally "
-            		+MyCallBackHandler.linkCount+" links crawled.");
-            System.out.println("Totally "+elapsedSeconds+" seconds used.");
+            //System.out.println("Totally "+ParallelAnalyzer.pageCount+" pages  crawled. Totally "
+            		//+ParallelAnalyzer.linkCount+" links crawled.");
+            System.out.println("For portion "+Id+":totally "+elapsedSeconds+" seconds used.");
         }catch(Exception e) {
                 e.printStackTrace();
         }
 	}
 	
-	public ParallelAnalyzer(String DumpDir,String XMLDir, int totalPortionNumbers)
+	public ParallelAnalyzer(String DumpDirPrefix,String XMLDirPrefix, int totalPortionNumbers)
 	{		
-		ParallelAnalyzer.DumpDir = DumpDir;
-		ParallelAnalyzer.XMLDir = XMLDir;
+		ParallelAnalyzer.DumpDirPrefix = DumpDirPrefix;
+		ParallelAnalyzer.XMLDirPrefix = XMLDirPrefix;
 		ParallelAnalyzer.totalPortionNumbers = totalPortionNumbers;
 	}
 	public static void main(String[] args)
