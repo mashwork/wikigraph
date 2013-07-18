@@ -62,7 +62,7 @@ public class ParallelIndexBuilder implements PageCallbackHandler
 		Document doc = new Document();
 		doc.add(new Field("title", title, Field.Store.YES,
 				Field.Index.ANALYZED));
-		doc.add(new Field("text", text, Field.Store.YES,
+		doc.add(new Field("text", text, Field.Store.NO,
 				Field.Index.ANALYZED));
 		docCount++;
 		try
@@ -71,6 +71,14 @@ public class ParallelIndexBuilder implements PageCallbackHandler
 		}catch(IOException e)
 		{
 			System.out.println("Adding lucene index error!");
+		}
+		try
+		{
+			flush();
+		}catch(Exception e)
+		{
+			System.out.println("Flush error!");
+			e.printStackTrace();
 		}
 	}
 	
@@ -113,6 +121,14 @@ public class ParallelIndexBuilder implements PageCallbackHandler
 		}
 		
 		return;
+	}
+	
+	public void flush() throws Exception
+	{
+		if(docCount%10000 == 0)
+		{
+			indexWriter.commit();
+		}
 	}
 	
 	public void printStatus()

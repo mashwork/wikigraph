@@ -42,7 +42,7 @@ public class MergeLuceneIndex
 		indexWriter.close();
 		mergePolicy.close();
 		long endTime = System.currentTimeMillis();
-		System.out.println("Totally "+(endTime-startTime)/1000 +"seconds used to merge indexes.");
+		System.out.println("Totally "+(endTime-startTime)/1000 +" seconds used to merge indexes.");
 	}
 	
 	public static void main(String[] args)
@@ -57,6 +57,5 @@ public class MergeLuceneIndex
 		{
 			e.printStackTrace();
 		}
-		
 	}
 }
