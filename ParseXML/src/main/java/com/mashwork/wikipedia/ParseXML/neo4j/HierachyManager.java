@@ -59,6 +59,10 @@ public class HierachyManager {
 		//System.out.println("Order.get(stack.peek().getFirst()) " + Order.get(stack.peek().getFirst()));
 		//System.out.println(Order.get(nodeName) - Order.get(stack.peek().getFirst()));
 		//System.out.println("level "+level +" stack " + stack.peek().getFirst());
+		if(Order.get(level)==null)
+		{
+			System.out.println(level);
+		}
 		return (Order.get(level) - Order.get(stack.peek().getFirst()));
 	}
 	
@@ -69,6 +73,7 @@ public class HierachyManager {
 	
 	public static void MyPush(Pair<String, Node> pair)
 	{
+		if(Order.get(pair.getFirst())!=null)
 		stack.push(pair);
 	}
 	
@@ -130,9 +135,21 @@ public class HierachyManager {
 		Order.put("c4",5);
 		Order.put("c5",6);
 		Order.put("c6",7);
-		Order.put("c7",8);
-		Order.put("c8",9);
-		Order.put("l",10);
+		Order.put("c7",7);
+		Order.put("c8",7);
+		Order.put("c9",7);
+		Order.put("c10",7);
+		Order.put("c11",7);
+		Order.put("c12",7);
+		Order.put("c13",7);
+		Order.put("c14",7);
+		Order.put("c15",7);
+		Order.put("c16",7);
+		Order.put("c17",7);
+		Order.put("c18",7);
+		Order.put("c19",7);
+		Order.put("c20",7);
+		Order.put("l",8);
 		
 		stack  = new Stack<Pair<String,Node>>();
 		pathStack = new Stack<Pair<String,String>>();

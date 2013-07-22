@@ -11,6 +11,7 @@ public class Example_Lucene
 {
 	public static void main(String[] args)
 	{
+		//String DBDir = "/Users/Ricky/mashwork/GOT_D3_DB_LUCENE_FullText";
 		String DBDir = "/Users/Ricky/mashwork/GOT_D3_DB_LUCENE_FullText";
 		//String DBDir = "/Users/Ricky/mashwork/ListCharac";
 		//String DBDir = "/Users/Ricky/mashwork/Anarchism_D2_FULL_LUCENE_TEST";

@@ -58,10 +58,12 @@ public class LuceneQuery
 			e.printStackTrace();
 		}
 		
-		String[] fields = new String[] { "title", "keywords", "text" };
+		String[] fields = new String[] { "title", "text" ,"alias", "abbreviation"};
 		HashMap<String,Float> boosts = new HashMap<String,Float>();
 		boosts.put("title", (float) 10.0);
-		boosts.put("text", (float) 5.0);
+		boosts.put("text", (float) 0.0);
+		boosts.put("alias", (float) 0.0);
+		boosts.put("abbreviation", (float) 0.0);
 		this.queryParser = new MultiFieldQueryParser(
 			Version.LUCENE_36,
 		    fields, 
@@ -128,7 +130,7 @@ public class LuceneQuery
 				System.out.println("Can not read results!");
 				e.printStackTrace();
 			}
-			SB.append(i++ +".	"+hit.score+ "	"+doc.get("title")+"\n");
+			SB.append(i++ +".	"+hit.score+ "	"+doc.get("title")+"		"+ doc.get("alias")+"\n");
 		}
 		long endTime = System.currentTimeMillis();
 		SB.append("Totally "+(endTime-startTime) +" ms used to search.\n");

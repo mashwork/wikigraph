@@ -62,7 +62,7 @@ public class ParallelAnalyzer extends Thread
             writer.writeStartDocument();
             writer.writeStartElement("d");
         	
-            ParallelHandler MBH = new ParallelHandler(writer,782367/8,Id);
+            ParallelHandler MBH = new ParallelHandler(writer,13539091/8,Id);
             
             wxsp.setPageCallback(MBH);
                 
@@ -92,8 +92,8 @@ public class ParallelAnalyzer extends Thread
 	}
 	public static void main(String[] args)
 	{
-		String PortionDumpDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_Poriton/GOT_D3_Pages";
-		String XMLoutputPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_Poriton/GOT_D3_Pages";
+		String PortionDumpDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki";
+		String XMLoutputPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki";
 		
 		ParallelAnalyzer parallelAnalyzer = new ParallelAnalyzer(PortionDumpDirPrefix,XMLoutputPrefix,8);
 		Thread AnalyzerThread1 = new Thread(parallelAnalyzer);

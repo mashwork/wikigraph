@@ -114,7 +114,7 @@ public class BuildLuceneIndex extends Thread
     	{
     		System.out.println("parse() error! "+e);
     		e.printStackTrace();
-    	}
+    	} 
 		
 		try
     	{
@@ -131,8 +131,11 @@ public class BuildLuceneIndex extends Thread
 	
 	public static void main(String[] args) throws Exception
 	{
-		String DumpDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_Poriton/GOT_D3_Pages";
-		String LuceneIndexDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_Poriton/LuceneIndex/LuceneIndex";
+		String DumpDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki";
+		String LuceneIndexDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/LuceneDB/LuceneDB";
+//		String DumpDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki-1-8/wholeWiki-1";
+//		String LuceneIndexDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/LuceneDB/test/LuceneDB";
+		
 		BuildLuceneIndex buildLuceneIndex = new BuildLuceneIndex(DumpDirPrefix,LuceneIndexDirPrefix,8);
 		
 		Thread builder1 = new Thread(buildLuceneIndex);

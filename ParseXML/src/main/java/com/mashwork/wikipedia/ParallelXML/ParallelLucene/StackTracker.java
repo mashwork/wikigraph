@@ -20,9 +20,16 @@ public class StackTracker
 		Order.put("c4",5);
 		Order.put("c5",6);
 		Order.put("c6",7);
-		Order.put("c7",8);
-		Order.put("c8",9);
-		Order.put("l",10);
+		Order.put("c7",7);
+		Order.put("c8",7);
+		Order.put("c9",7);
+//		Order.put("c10",7);
+//		Order.put("c11",7);
+//		Order.put("c12",7);
+//		Order.put("c13",7);
+//		Order.put("c14",7);
+//		Order.put("c15",7);
+		Order.put("l",8);
 		
 		pathStack = new Stack<Pair<String,String>>();
 	}
@@ -37,7 +44,8 @@ public class StackTracker
 		{
 			String topElementOrder = pathStack.peek().getFirst();
 			String newElementOrder = pair.getFirst();
-			if(Order.get(newElementOrder) - Order.get(topElementOrder) <=0)
+			if((Order.get(newElementOrder)!=null && Order.get(topElementOrder)!=null) &&
+					Order.get(newElementOrder) - Order.get(topElementOrder) <=0)
 			{
 				pathStack.pop();
 				tractPath(pair);

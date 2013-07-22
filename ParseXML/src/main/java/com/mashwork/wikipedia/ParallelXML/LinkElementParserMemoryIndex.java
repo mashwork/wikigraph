@@ -40,7 +40,7 @@ public class LinkElementParserMemoryIndex
 	final String TOC_KEY = "TocName";
 
 	static String fatherName;
-	final int pageCount = 782367/8;
+	final int pageCount = 13539091/8;	//782367
 	int linkCount = 0;
 	int counter = 0;
 	long startTime;
@@ -60,6 +60,7 @@ public class LinkElementParserMemoryIndex
 	
 	public void parse(String fileName)
 	{
+		System.out.println(fileName);
 		try
 		{
 			startTime = System.currentTimeMillis();
@@ -68,37 +69,67 @@ public class LinkElementParserMemoryIndex
 		catch(Exception e)
 		{
 			System.out.println("IOException Error or XMLStreamException!");
+			e.printStackTrace();
 		}
 	}
 	
-	public void parse(InputStream inputStream) throws IOException, XMLStreamException {
-        XMLStreamReader reader = XML_INPUT_FACTORY.createXMLStreamReader(inputStream, "UTF-8");
+	
+	public void parse(InputStream inputStream) {
+		XMLStreamReader reader = null;
+		try
+		{
+        	reader = XML_INPUT_FACTORY.createXMLStreamReader(inputStream, "UTF-8");
+		}catch(XMLStreamException e)
+		{
+			System.out.println("Open input stream error!");
+			e.printStackTrace();
+		}
         try {
             parseElements(reader);
-        } finally {
-            reader.close();
-            inputStream.close();
+        }finally {
+        	try
+            {
+        		reader.close();
+        		inputStream.close();
+            }catch(IOException e)
+            {
+            	System.out.println("Error! Can not close the stream !");
+            	e.printStackTrace();
+            }catch(XMLStreamException e)
+            {
+            	System.out.println("Error! Can not close the reader!");
+            	e.printStackTrace();
+            }
         }
     }
 	
-	private void parseElements(XMLStreamReader reader) throws XMLStreamException {
+	private void parseElements(XMLStreamReader reader)
+	{
         LinkedList<String> elementStack = new LinkedList<String>();
         StringBuilder textBuffer = new StringBuilder();
         
-        while (reader.hasNext()) {
-            switch (reader.next()) {
-            case XMLEvent.START_ELEMENT:
-                elementStack.push(reader.getName().getLocalPart());
-                textBuffer.setLength(0);
-                break;
-            case XMLEvent.END_ELEMENT:
-                String element = elementStack.pop();
-                handleElement(element, textBuffer.toString().trim());
-                break;
-            case XMLEvent.CHARACTERS:
-                textBuffer.append(reader.getText());
-                break;
-            }
+        try
+        {
+	        while (reader.hasNext()) {
+	            switch (reader.next()) {
+	            case XMLEvent.START_ELEMENT:
+	                elementStack.push(reader.getName().getLocalPart());
+	                textBuffer.setLength(0);
+	                break;
+	            case XMLEvent.END_ELEMENT:
+	                String element = elementStack.pop();
+	                handleElement(element, textBuffer.toString().trim());
+	                break;
+	            case XMLEvent.CHARACTERS:
+	                textBuffer.append(reader.getText());
+	                break;
+	            }
+	        }
+        }catch(Exception e)
+        {
+        	System.out.println("xmlstream reader error!");
+        	System.out.println("Text: "+textBuffer.toString().trim());
+        	e.printStackTrace();
         }
     }
 	

@@ -50,4 +50,47 @@ public class Filter
 		else
 			return false;
 	}
+	
+	public static String[] getAliasAbbreviation(String title)
+	{
+		if(title==null) return null;
+		String[] subTitles = title.split("#");
+		if(subTitles[0]==null) return null;
+		String[] words = subTitles[0].split("\\(");
+		//words = words[0].split(" ");
+		words = words[0].split("((\\W|\\d).*?)");
+		String[] result = {"",""};
+		int count = 0;
+		for(String word:words)
+		{
+			//System.out.println(word);
+			if(word!=null && !word.equals(""))
+			{
+				if(Character.isLetter(word.charAt(0)))
+				{
+					result[0] = result[0]+word;
+					result[1] = result[1]+word.charAt(0);
+					count++;
+				}
+			}
+		}
+		if(result[0].length() < 20)
+		{
+			result[0] = result[0].toLowerCase();
+		}
+		else 
+		{
+			result[0] = "";
+		}
+
+		if(count>1 && count<=6)
+		{
+			result[1] = result[1].toLowerCase();
+		}
+		else 
+		{
+			result[0] = "";
+		}
+		return result;
+	}
 }

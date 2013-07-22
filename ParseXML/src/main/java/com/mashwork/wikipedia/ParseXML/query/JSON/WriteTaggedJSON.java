@@ -2,11 +2,9 @@ package com.mashwork.wikipedia.ParseXML.query.JSON;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
 import com.mashwork.wikipedia.ParseXML.query.LuceneQuery;
 
@@ -85,8 +83,8 @@ public class WriteTaggedJSON
 	public static void main(String[] args) throws Exception
 	{
 		String LuceneIndexDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/" +
-				"GOT_D3_Poriton/MergedLuceneIndex";
-		String outputDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/twitter_20130609-21_tagged.log";
+				"GOT_D3_Poriton/MergedLuceneIndex_aliasAbbre";
+		String outputDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/twitter_20130609-21_tagged_alias.log";
 		WriteTaggedJSON writeTaggedJSON = new WriteTaggedJSON(LuceneIndexDir,outputDir);
 		writeTaggedJSON.parse();
 		

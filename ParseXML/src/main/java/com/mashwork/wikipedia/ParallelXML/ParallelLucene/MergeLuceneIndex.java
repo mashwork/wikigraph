@@ -47,8 +47,8 @@ public class MergeLuceneIndex
 	
 	public static void main(String[] args)
 	{
-		String subIndexesPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_Poriton/LuceneIndex/LuceneIndex";
-		String mergedIndexPath = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_Poriton/MergedLuceneIndex";
+		String subIndexesPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/LuceneDB/LuceneDB";
+		String mergedIndexPath = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/LuceneDB/LuceneDB_Merged";
 		//FSDirectory.open(new File(LuceneIndexDir));
 		try
 		{

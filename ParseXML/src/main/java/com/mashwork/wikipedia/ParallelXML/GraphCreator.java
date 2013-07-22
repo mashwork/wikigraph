@@ -1,6 +1,9 @@
 package com.mashwork.wikipedia.ParallelXML;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -33,7 +36,7 @@ public class GraphCreator
     {
     	this.XMLPrefix = XMLPrefix;
     	this.DBDir = DBDir;
-    	this.inMemoryIndex = new HashMap<String,Long>(13500000);
+    	this.inMemoryIndex = new HashMap<String,Long>(14000000);
     }
     
     public void insertNodes(String XMLDir, int part)
@@ -89,7 +92,7 @@ public class GraphCreator
     	Transaction tx = graphDb.beginTx();
     	LinkElementParserMemoryIndex LEP = new LinkElementParserMemoryIndex(graphDb, 
     			nodeIndex,TocIndex, fullTextIndex, tx,inMemoryIndex,inserter,part);
-    	System.out.println("Creating tree Structure.");
+    	System.out.println("Creating links.");
     	LEP.parse(XMLDir);
     	tx.finish();
     	inserter.shutdown();
@@ -121,21 +124,45 @@ public class GraphCreator
 		return XMLPrefix+"-"+i+"-structure.xml";
 	}
 	
+	public void writeInMemoryIndex(String Dir)
+	{
+		try
+		{
+			FileWriter FW = new FileWriter(Dir);
+			Iterator<String> it = inMemoryIndex.keySet().iterator();
+			while(it.hasNext())
+			{
+				String nodeName = it.next();
+				FW.write(nodeName+"\n");
+				FW.write(inMemoryIndex.get(nodeName)+"\n");
+			}
+			FW.close();
+		}catch(IOException e)
+		{
+			System.out.println("Trying to write hashmap into disk! ");
+			e.printStackTrace();
+		}
+	}
+	
 	public static void main(String[] args) throws Exception
 	{
-		String XMLPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_Poriton/GOT_D3_Pages";
-		String DBDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_Poriton/testDB";
+		String XMLPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki";
+		String DBDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/GraphDB";
 		GraphCreator graphCreator = new GraphCreator(XMLPrefix,DBDir);
-		for(int i = 1;i <= 8;i++)
+		for(int i = 3;i <= 8;i++)
 		{
 			String XMLDir = graphCreator.getXMLDir(i);
 			graphCreator.insertNodes(XMLDir,i);
 		}
-		for(int i = 1;i <= 8;i++)
-		{
-			String XMLDir = graphCreator.getXMLDir(i);
-			graphCreator.insertLinks(XMLDir,i);
-		}
+		
+		String inMemoryIndexDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/hashMap";
+		graphCreator.writeInMemoryIndex(inMemoryIndexDir);
+		
+//		for(int i = 1;i <= 8;i++)
+//		{
+//			String XMLDir = graphCreator.getXMLDir(i);
+//			graphCreator.insertLinks(XMLDir,i);
+//		}
 		
 	}
 }

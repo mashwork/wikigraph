@@ -14,7 +14,7 @@ public class DumpDevider
 	String output;
 	FileWriter FW;
 
-	protected static int total = 782367;			//13539091
+	protected static int total = 13539091;			//13539091	//782367
 	int portionSize;
 	int portion;
 	int portionCounter = 1;
@@ -104,8 +104,8 @@ public class DumpDevider
 	
 	public static void main(String[] args) throws IOException
 	{
-		String dir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_Pages.xml";
-		String output = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/GOT_D3_Poriton/GOT_D3_Pages.xml";
+		String dir = "/Users/Ricky/mashwork/wikidump/new/enwiki-20130604-pages-articles.xml";
+		String output = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki.xml";
 		int portion = 8;
 		DumpDevider dumpDevider = new DumpDevider(dir,output,portion);
 		dumpDevider.devide();

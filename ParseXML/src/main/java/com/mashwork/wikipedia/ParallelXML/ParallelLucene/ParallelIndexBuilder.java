@@ -35,7 +35,7 @@ public class ParallelIndexBuilder implements PageCallbackHandler
 	
 	int Id;
 	int counter = 0;
-	int total = 762385/8;
+	int total = 13539091/8;
 	int docCount = 0;
 	long startTime = System.currentTimeMillis();
 	
@@ -62,8 +62,18 @@ public class ParallelIndexBuilder implements PageCallbackHandler
 		Document doc = new Document();
 		doc.add(new Field("title", title, Field.Store.YES,
 				Field.Index.ANALYZED));
+		if(title.contains("List of A Song of Ice and Fire characters")) System.out.println(title);
 		doc.add(new Field("text", text, Field.Store.NO,
 				Field.Index.ANALYZED));
+		
+		String[] aliasAbbreviation = Filter.getAliasAbbreviation(title);
+		if(!aliasAbbreviation[0].equals("") && aliasAbbreviation[0]!=null)
+		{
+			doc.add(new Field("alias", aliasAbbreviation[0], Field.Store.YES,
+					Field.Index.ANALYZED));
+			doc.add(new Field("abbreviation", aliasAbbreviation[1], Field.Store.YES,
+					Field.Index.ANALYZED));
+		}
 		docCount++;
 		try
 		{
