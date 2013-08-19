@@ -3,8 +3,6 @@ package com.mashwork.wikipedia.ParseXML.neo4j;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.Vector;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;

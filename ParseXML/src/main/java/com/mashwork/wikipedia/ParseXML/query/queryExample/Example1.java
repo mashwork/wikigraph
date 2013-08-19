@@ -8,11 +8,12 @@ import org.neo4j.graphdb.Node;
 import com.mashwork.wikipedia.ParseXML.neo4j.Pair;
 import com.mashwork.wikipedia.ParseXML.query.*;
 
+//some simple example used for testing the wikiquery methods.
 public class Example1
 {
 	public static void main(String[] args)
 	{
-		String DBDir = "/Users/Ricky/mashwork/GOT_D3_DB";
+		String DBDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/GraphDB";
 		WikiQuery wikiQuery = new WikiQuery(DBDir);
 		
 		System.out.println("DB set up. Start to search.");

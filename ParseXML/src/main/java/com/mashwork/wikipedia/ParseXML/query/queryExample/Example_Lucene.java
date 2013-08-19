@@ -7,6 +7,8 @@ import org.neo4j.graphdb.Node;
 import com.mashwork.wikipedia.ParseXML.neo4j.HierachyManager;
 import com.mashwork.wikipedia.ParseXML.query.WikiQuery;
 
+//simple test code. Deprecated
+@Deprecated
 public class Example_Lucene
 {
 	public static void main(String[] args)

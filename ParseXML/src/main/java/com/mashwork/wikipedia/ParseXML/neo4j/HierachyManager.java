@@ -10,10 +10,47 @@ public class HierachyManager {
 	static HashMap<String,Integer> Order;
 	static Stack<Pair<String,Node>> stack;
 	static Stack<Pair<String,String>> pathStack;
+	static Stack<Pair<String,Long>> IdStack;
 	final static String USERNAME_KEY = "pageName";
 	final static String TOC_KEY = "TocName";
 	
-	public static void tractPath(Pair<String,String> pair)
+	public static void updateIdPath(Pair<String,Long> pair)
+	{
+		if(IdStack.isEmpty())
+		{
+			return;
+		}
+		else 
+		{
+			String topElementOrder = IdStack.peek().getFirst();
+			String newElementOrder = pair.getFirst();
+			if(Order.get(newElementOrder) - Order.get(topElementOrder) <=0)
+			{
+				IdStack.pop();
+				updateIdPath(pair);
+			}
+		}
+	}
+	
+	public static void addIdPath(Pair<String,Long> pair)
+	{
+		updateIdPath(pair);
+		IdStack.push(pair);
+	}
+	
+	public static Long getTopId()
+	{
+		if(!IdStack.isEmpty())
+		{
+			return IdStack.peek().getSecond();
+		}
+		else
+		{
+			return null;
+		}
+	}
+	
+	public static void tractNamePath(Pair<String,String> pair)
 	{
 		if(pathStack.isEmpty())
 		{
@@ -26,7 +63,7 @@ public class HierachyManager {
 			if(Order.get(newElementOrder) - Order.get(topElementOrder) <=0)
 			{
 				pathStack.pop();
-				tractPath(pair);
+				tractNamePath(pair);
 			}
 			else
 			{
@@ -35,7 +72,7 @@ public class HierachyManager {
 		}
 	}
 	
-	public static String getPath()
+	public static String getNamePath()
 	{
 		Iterator<Pair<String,String>> it = pathStack.iterator();
 		StringBuilder sb = new StringBuilder();
@@ -153,6 +190,7 @@ public class HierachyManager {
 		
 		stack  = new Stack<Pair<String,Node>>();
 		pathStack = new Stack<Pair<String,String>>();
+		IdStack = new Stack<Pair<String,Long>>();
 	}
 	
 }

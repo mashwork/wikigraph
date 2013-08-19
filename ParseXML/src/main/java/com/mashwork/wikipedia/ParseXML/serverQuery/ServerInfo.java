@@ -1,6 +1,14 @@
 package com.mashwork.wikipedia.ParseXML.serverQuery;
 
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time
+ * a server information class that tells people how to use the query. This information should be
+ * always shown to user.	
+ */
 public class ServerInfo
 {
 	public static String HelpInfo(String address,String port)

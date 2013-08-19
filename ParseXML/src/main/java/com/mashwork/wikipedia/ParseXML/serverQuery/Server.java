@@ -6,6 +6,15 @@ import org.vertx.java.deploy.Verticle;
 
 import java.util.Map;
 
+
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time
+ * This server is written in vertx. It needs some other command to start the server. So this
+ * server is not recommanded. Please use netty server instead.	
+ */
 public class Server extends Verticle 
 {
   public void start() 

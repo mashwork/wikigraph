@@ -1,2 +1,9 @@
 /bin
 /target
+.classpath
+.DS_Store
+../.DS_Store
+../.DS_Store
+.settings
+.project
+Anarchism_D2_FULL_LUCENE_TEST/

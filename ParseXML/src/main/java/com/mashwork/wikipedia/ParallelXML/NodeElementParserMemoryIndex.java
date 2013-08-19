@@ -6,29 +6,34 @@ import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
 
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.index.Index;
+import org.neo4j.helpers.collection.MapUtil;
+import org.neo4j.index.lucene.unsafe.batchinsert.LuceneBatchInserterIndexProvider;
+import org.neo4j.unsafe.batchinsert.BatchInserter;
+import org.neo4j.unsafe.batchinsert.BatchInserterIndex;
+import org.neo4j.unsafe.batchinsert.BatchInserterIndexProvider;
+import org.neo4j.unsafe.batchinsert.BatchInserters;
 
-import com.mashwork.wikipedia.ParseXML.neo4j.HierachyManager;
-import com.mashwork.wikipedia.ParseXML.neo4j.Pair;
-import com.mashwork.wikipedia.ParseXML.neo4j.RelTypes;
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time	
+ * this class is used for putting page nodes into neo4j(table of content node will be added by LinkElementParsermemoryIndex)
+ */
 public class NodeElementParserMemoryIndex
 {
 	public final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newInstance();	//***
-	public GraphDatabaseService graphDb;
-	public Index<Node> nodeIndex;
-	public Index<Node> TocIndex;
-	public Index<Node> fullTextIndex;
-	public Transaction tx;
+	BatchInserter inserter;
+	BatchInserterIndexProvider indexProvider;
+	BatchInserterIndex index;
 	public HashMap<String,Long> inMemoryIndex;
 	public int part;
 	
@@ -36,50 +41,26 @@ public class NodeElementParserMemoryIndex
 	final String TOC_KEY = "TocName";
 
 	static String fatherName;
-	final int pageCount = 13539091/8;		//782367
+	final int pageCount = 13539091/64;		//782367
 	int links = 0;
 	int nodeCount = 0;
 	int counter = 0;
 	long startTime;
 	
-	public NodeElementParserMemoryIndex(GraphDatabaseService graphDb, Index<Node> nodeIndex,
-			Index<Node> TocIndex, Index<Node> fullTextIndex, Transaction tx, HashMap<String,Long> inMemoryIndex,int part)
+	public NodeElementParserMemoryIndex(String DBDir, HashMap<String,Long> inMemoryIndex)
 	{
-		this.graphDb = graphDb;
-		this.nodeIndex = nodeIndex;
-		this.TocIndex = TocIndex;
-		this.fullTextIndex = fullTextIndex;
-		this.tx = tx;
+    	this.inserter = BatchInserters.inserter(DBDir);
+        this.indexProvider = new LuceneBatchInserterIndexProvider(inserter);
+        this.index = indexProvider.nodeIndex("nodes", MapUtil.stringMap("type", "exact", "to_lower_case", "false"));
 		this.inMemoryIndex = inMemoryIndex;
-		this.part = part;
+    	registerShutdownHook();
+		//this.part = part;
 	}
 	
-//	public void parse(String fileName)
-//	{
-//		try
-//		{
-//			parse(new FileInputStream(fileName));
-//		}
-//		catch(Exception e)
-//		{
-//			System.out.println("IOException Error or XMLStreamException!");
-//		}
-//	}
-//	
-//	public void parse(InputStream inputStream) throws IOException, XMLStreamException {
-//        XMLStreamReader reader = XML_INPUT_FACTORY.createXMLStreamReader(inputStream, "UTF-8");
-//        try {
-//        	startTime = System.currentTimeMillis();
-//            parseElements(reader);
-//        } finally {
-//            reader.close();
-//            inputStream.close();
-//        }
-//    }
 	
-	
-	public void parse(String fileName)
+	public void parse(String fileName,int part)
 	{
+		this.part = part;
 		System.out.println(fileName);
 		try
 		{
@@ -122,6 +103,10 @@ public class NodeElementParserMemoryIndex
             }
         }
     }
+	
+	/*
+	 * recognize the start and end of a xml element
+	 */
 	private void parseElements(XMLStreamReader reader){
         LinkedList<String> elementStack = new LinkedList<String>();
         StringBuilder textBuffer = new StringBuilder();
@@ -150,6 +135,9 @@ public class NodeElementParserMemoryIndex
         }
     }
 	
+	/*
+	 * every an element is recognized, this funciton will be called to create node in neo4j.
+	 */
 	public void handleElement(String element, String value)
 	{
 		if(element.equals("l") || element.equals("d"))
@@ -160,44 +148,17 @@ public class NodeElementParserMemoryIndex
 		if(element.equals("t"))
 		{
 			printStatus();
-			Node node = createAndIndexNode(value);
-			Pair<String,Node> pair = new Pair<String,Node>(element,node);
-			HierachyManager.MyPop(pair);
-			HierachyManager.MyPush(pair);
-			fatherName = node.getProperty(USERNAME_KEY).toString();
-			
-		}
-		else
-		{
-			if(need2Skip(element)) return;
-			Node fatherNode = HierachyManager.findParentNode(element);
-			Node node = createTocNode(value);
-			Pair<String,Node> pair = new Pair<String,Node>(element,node);			
-			fatherNode.createRelationshipTo(node, RelTypes.TOC);
-			HierachyManager.MyPush(pair);
+			createAndIndexNode(value);
 		}
 	}
 	
-	//this code is used to skip the c7~c20 toc contents.
-	public boolean need2Skip(String element)
-	{
-		int level = Integer.parseInt(element.substring(1,element.length()));
-		if(level > 6)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
+	
 	
 	public void needToFlush()
 	{
-		if ( counter > 0 && counter % 1000 == 0 ) {
-            tx.success();
-            tx.finish();
-            tx = graphDb.beginTx();
+		if ( counter > 0 && counter % 5000 == 0 ) {
+            index.flush();
+            System.out.println("Flushed");
         }
 	}
 	
@@ -205,7 +166,7 @@ public class NodeElementParserMemoryIndex
 	{
 		DecimalFormat df = new DecimalFormat("0.00");
 		double percentage = ((double)counter++/pageCount*100);
-		needToFlush();
+		//needToFlush();
 		if(counter%(pageCount/100) == 0 )
 		{	
 			System.out.print("Processing: part "+part +" "+ counter
@@ -217,40 +178,42 @@ public class NodeElementParserMemoryIndex
 		}
 	}
 	
-	//This is for Table of Content nodes.
-	private Node createTocNode(String pageName)
-	{	
-		String prePath = HierachyManager.getPrePath();
-		Node exist = TocIndex.get(TOC_KEY,prePath+"#"+pageName).getSingle();
-		if(exist!=null)
-		{
-			return exist;
-		}
-		else
-		{
-			Node node = graphDb.createNode();
-	        node.setProperty( USERNAME_KEY, pageName );
-	        String TocName = prePath + "#"+pageName;
-	        //System.out.println(TocName);
-	        node.setProperty( TOC_KEY, TocName);
-	        //if(fatherName.equals("Amsterdam")) System.out.println("The stored name: "+TocName);
-	        TocIndex.add(node,TOC_KEY,TocName);
-	        
-	        fullTextIndex.add(node,TOC_KEY,TocName.replace('#',' '));
-	        return node;
-		}
-	}
 	
 	//This is for page nodes.
-	private Node createAndIndexNode(String pageName)
+	private void createAndIndexNode(String pageName)
     {
-        Node node = graphDb.createNode();
-        node.setProperty( USERNAME_KEY, pageName );
-        nodeIndex.add( node, USERNAME_KEY, pageName );
-        Long nodeId = node.getId();
-        inMemoryIndex.put(pageName, nodeId);
-        fullTextIndex.add(node,USERNAME_KEY,pageName);
-        return node;
+		Map<String, Object> properties = MapUtil.map(USERNAME_KEY, pageName);
+        long nodeId = inserter.createNode(properties);
+        index.add(nodeId, properties);
+        //long startTime = System.currentTimeMillis();
+        inMemoryIndex.put(pageName,nodeId);
+        nodeCount++;
+        if(nodeCount%50000==0)
+        {
+        	index.flush();
+        	System.out.println("Flushed.");
+        }
+        //long elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
+        //if(elapsedSeconds >1) System.out.println(elapsedSeconds);
+    }
+	
+	public void shutdown()
+    {
+		index.flush();
+    	indexProvider.shutdown();
+        inserter.shutdown(); 
+    }
+	
+	private void registerShutdownHook()
+    {
+        Runtime.getRuntime().addShutdownHook( new Thread()
+        {
+            @Override
+            public void run()
+            {
+                shutdown();
+            }
+        } );
     }
 
 }

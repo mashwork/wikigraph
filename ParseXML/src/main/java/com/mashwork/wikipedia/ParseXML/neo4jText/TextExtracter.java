@@ -18,21 +18,21 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
-import de.tudarmstadt.ukp.wikipedia.parser.Content;
-import de.tudarmstadt.ukp.wikipedia.parser.Link;
 import de.tudarmstadt.ukp.wikipedia.parser.Paragraph;
 import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
 import de.tudarmstadt.ukp.wikipedia.parser.Section;
 import de.tudarmstadt.ukp.wikipedia.parser.SectionContainer;
 import de.tudarmstadt.ukp.wikipedia.parser.SectionContent;
-import de.tudarmstadt.ukp.wikipedia.parser.Template;
-import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.FlushTemplates;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.ModularParser;
-import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.ShowTemplateNamesAndParameters;
 import edu.jhu.nlp.wikipedia.*;
 
+/*
+ * All the classes under this package are deprecated. These classes used a different schema to put node and links into
+ * neo4j. It is efficient when the data size is small. But will have performance issue if it is big. Most of the time
+ * is spent on retrieving node(memory-IO swapping). The lucene index will be added to neo4j nodes which is not very efficient.
+ */
 public class TextExtracter extends MyCallBackHandler
 {
 	final static int pageCount = 25579;

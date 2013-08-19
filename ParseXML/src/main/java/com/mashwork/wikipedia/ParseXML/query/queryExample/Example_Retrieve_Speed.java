@@ -2,7 +2,8 @@ package com.mashwork.wikipedia.ParseXML.query.queryExample;
 
 import com.mashwork.wikipedia.ParseXML.query.WikiQuery;
 import org.neo4j.graphdb.Node;
-
+//code used for simple analysis. Test how fast the process goes. Deprecated
+@Deprecated
 public class Example_Retrieve_Speed
 {
 	public static void main(String[] args)

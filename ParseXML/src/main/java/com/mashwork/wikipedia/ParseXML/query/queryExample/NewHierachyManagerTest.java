@@ -3,6 +3,8 @@ package com.mashwork.wikipedia.ParseXML.query.queryExample;
 import com.mashwork.wikipedia.ParseXML.neo4j.HierachyManager;
 import com.mashwork.wikipedia.ParseXML.neo4j.Pair;
 
+//used to test how the new static tool function works.
+@Deprecated
 public class NewHierachyManagerTest
 {
 	public static void main(String[] args)
@@ -15,17 +17,17 @@ public class NewHierachyManagerTest
 		Pair<String,String> p5 = new Pair<String,String>("c3","c3");
 		Pair<String,String> p6 = new Pair<String,String>("t","apple");
 		
-		HierachyManager.tractPath(p1);
-		System.out.println(HierachyManager.getPath());
-		HierachyManager.tractPath(p2);
-		System.out.println(HierachyManager.getPath());
-		HierachyManager.tractPath(p3);
-		System.out.println(HierachyManager.getPath());
-		HierachyManager.tractPath(p4);
-		System.out.println(HierachyManager.getPath());
-		HierachyManager.tractPath(p5);
-		System.out.println(HierachyManager.getPath());
-		HierachyManager.tractPath(p6);
-		System.out.println(HierachyManager.getPath());
+		HierachyManager.tractNamePath(p1);
+		System.out.println(HierachyManager.getNamePath());
+		HierachyManager.tractNamePath(p2);
+		System.out.println(HierachyManager.getNamePath());
+		HierachyManager.tractNamePath(p3);
+		System.out.println(HierachyManager.getNamePath());
+		HierachyManager.tractNamePath(p4);
+		System.out.println(HierachyManager.getNamePath());
+		HierachyManager.tractNamePath(p5);
+		System.out.println(HierachyManager.getNamePath());
+		HierachyManager.tractNamePath(p6);
+		System.out.println(HierachyManager.getNamePath());
 	}
 }

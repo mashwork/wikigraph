@@ -3,6 +3,9 @@ package com.mashwork.wikipedia.ParallelXML.ParallelLucene;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -12,18 +15,27 @@ import org.apache.lucene.util.Version;
 import edu.jhu.nlp.wikipedia.WikiXMLParser;
 import edu.jhu.nlp.wikipedia.WikiXMLParserFactory;
 
-public class BuildLuceneIndex extends Thread
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time	
+ * This class is a parallel controller. Several indexBuilder thread will run in parallel.
+ * 
+ */
+public class BuildLuceneIndex implements Runnable//extends Thread
 {
 	static String DumpDirPrefix;
 	static String LuceneIndexDirPrefix;
-	static int counter = 1;
+	int counter = 1;
 	static int totalPortionNumbers;
 	
-	public BuildLuceneIndex(String DumpDirPrefix,String LuceneIndexDirPrefix, int totalPortionNumbers) throws Exception
+	public BuildLuceneIndex(String DumpDirPrefix,String LuceneIndexDirPrefix, int totalPortionNumbers,int counter) throws Exception
 	{
 		BuildLuceneIndex.DumpDirPrefix = DumpDirPrefix;
 		BuildLuceneIndex.LuceneIndexDirPrefix = LuceneIndexDirPrefix;
 		BuildLuceneIndex.totalPortionNumbers = totalPortionNumbers;
+		this.counter = counter;
 	}
 	
 	public void run()
@@ -38,7 +50,7 @@ public class BuildLuceneIndex extends Thread
 			specificLuceneIndexDir = getSpecificLuceneIndexDir();
 			System.out.println(specificLuceneIndexDir);
 			Id = getCounter();
-			addCounter();
+			//addCounter();
 		}
 		try
 		{
@@ -49,10 +61,10 @@ public class BuildLuceneIndex extends Thread
 		}
 	}
 	
-	public synchronized void addCounter()
-	{
-		counter++;
-	}
+//	public synchronized void addCounter()
+//	{
+//		counter++;
+//	}
 	
 	public synchronized String getSpecificDumpDir()
 	{
@@ -69,6 +81,7 @@ public class BuildLuceneIndex extends Thread
 		return counter;
 	}
 	
+	//the param id will indicate which part of dump it is.
 	public void execute(String DumpDir,String LuceneIndexDir,int Id) 
 	{
 		WikiXMLParser wxsp = WikiXMLParserFactory.getSAXParser(DumpDir);
@@ -131,30 +144,30 @@ public class BuildLuceneIndex extends Thread
 	
 	public static void main(String[] args) throws Exception
 	{
-		String DumpDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki";
-		String LuceneIndexDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/LuceneDB/LuceneDB";
-//		String DumpDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki-1-8/wholeWiki-1";
-//		String LuceneIndexDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/LuceneDB/test/LuceneDB";
+		if (args.length < 4) {
+		      System.out.println("USAGE: ExtractLinks <preprocessed-xml-file> <DBDir> <numberOfThreads> <numberOfPortions>");
+		      System.exit(255);
+		      }
 		
-		BuildLuceneIndex buildLuceneIndex = new BuildLuceneIndex(DumpDirPrefix,LuceneIndexDirPrefix,8);
+		//String DumpDirPrefix = "/Volumes/Seagate Backup Plus Drive/Wikipedia/whileWiki64/wholeWiki";
+		//String LuceneIndexDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/LuceneDB_New_betterAlias/LuceneDB2";
 		
-		Thread builder1 = new Thread(buildLuceneIndex);
-		Thread builder2 = new Thread(buildLuceneIndex);
-		Thread builder3 = new Thread(buildLuceneIndex);
-		Thread builder4 = new Thread(buildLuceneIndex);
-		Thread builder5 = new Thread(buildLuceneIndex);
-		Thread builder6 = new Thread(buildLuceneIndex);
-		Thread builder7 = new Thread(buildLuceneIndex);
-		Thread builder8 = new Thread(buildLuceneIndex);
+		String DumpDirPrefix = args[0];
+		String LuceneIndexDirPrefix = args[1];
+		int numThread = Integer.parseInt(args[2]);
+		int numPortion = Integer.parseInt(args[3]);
 		
 		
-		builder1.start();
-		builder2.start();
-		builder3.start();
-		builder4.start();
-		builder5.start();
-		builder6.start();
-		builder7.start();
-		builder8.start();
+		ExecutorService service = Executors.newFixedThreadPool(numThread);
+		for(int i = 0;i < numPortion;i++)
+		{
+			System.out.println("Starting part "+(i+1));
+			Runnable thread = new BuildLuceneIndex(DumpDirPrefix,LuceneIndexDirPrefix,numPortion,i+1);
+			service.execute(thread);
+			//service.wait(200);
+		}
+		service.shutdown();
+        service.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        System.out.println("all thread complete");
 	}
 }

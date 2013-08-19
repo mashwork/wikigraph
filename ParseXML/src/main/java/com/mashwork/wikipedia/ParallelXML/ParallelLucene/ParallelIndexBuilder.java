@@ -25,6 +25,14 @@ import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.ModularParser;
 import edu.jhu.nlp.wikipedia.PageCallbackHandler;
 import edu.jhu.nlp.wikipedia.WikiPage;
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time	
+ * This class is used for building lucene index for wiki. Each table of content of a page will be a document.
+ * each document will have 4 fields: title, text, alias and abbreviation
+ */
 public class ParallelIndexBuilder implements PageCallbackHandler
 {
 	//String DumpDir;
@@ -35,7 +43,7 @@ public class ParallelIndexBuilder implements PageCallbackHandler
 	
 	int Id;
 	int counter = 0;
-	int total = 13539091/8;
+	int total = 13539091/64;				//13539091/64;	813394	30346/64
 	int docCount = 0;
 	long startTime = System.currentTimeMillis();
 	
@@ -56,13 +64,14 @@ public class ParallelIndexBuilder implements PageCallbackHandler
 		this.Mparser.setTemplateParser(new WikiTemplateParser());
 	}
 	
+	//test information will not be stored.
 	public void addText2Index(String text)
 	{
 		String title = stackTracker.getPath();
 		Document doc = new Document();
 		doc.add(new Field("title", title, Field.Store.YES,
 				Field.Index.ANALYZED));
-		if(title.contains("List of A Song of Ice and Fire characters")) System.out.println(title);
+		//if(title.contains("List of A Song of Ice and Fire characters")) System.out.println(title);
 		doc.add(new Field("text", text, Field.Store.NO,
 				Field.Index.ANALYZED));
 		
@@ -77,6 +86,7 @@ public class ParallelIndexBuilder implements PageCallbackHandler
 		docCount++;
 		try
 		{
+			//if(doc==null) System.out.println("NULL!!!");
 			indexWriter.addDocument(doc);
 		}catch(IOException e)
 		{
@@ -92,6 +102,7 @@ public class ParallelIndexBuilder implements PageCallbackHandler
 		}
 	}
 	
+	//for a page, recursively load the table of content information and build lucene index for it.
 	public void StructureRecursion(List<Section> sectionList, String l)
 	{
 		int k = 1;
@@ -133,6 +144,8 @@ public class ParallelIndexBuilder implements PageCallbackHandler
 		return;
 	}
 	
+	
+	//can not put all the information in memory. flush every 10000 documents.
 	public void flush() throws Exception
 	{
 		if(docCount%10000 == 0)
@@ -167,6 +180,8 @@ public class ParallelIndexBuilder implements PageCallbackHandler
 			
 			ParsedPage pp = Mparser.parse(page.getWikiText());
 			
+			
+			//addText2Index(pp.getText());
 			StructureRecursion(pp.getSections(),"");
 
  }

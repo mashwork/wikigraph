@@ -1,20 +1,31 @@
 package com.mashwork.wikipedia.ParallelXML;
 
+import java.io.BufferedWriter;
 import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamWriter;
-
-//import com.mashwork.wikipedia.ParseXML.MyCallBackHandler;
+//import javax.xml.stream.XMLOutputFactory;
 
 import edu.jhu.nlp.wikipedia.WikiXMLParser;
 import edu.jhu.nlp.wikipedia.WikiXMLParserFactory;
 
-public class ParallelAnalyzer extends Thread
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time	
+ * This class is used to preprocess the wikiDump. After we use the DumpDevider to devide the dump into several parts.
+ * We can use this class to preprocess the file in parallel. All the dump files will be converted into simplefied
+ * Page-TabelOfContent-Link xml. The xml file will be in "xxx-#-structure.xml"
+ */
+public class ParallelAnalyzer implements Runnable//extends Thread
 {
 	static String DumpDirPrefix;
 	static String XMLDirPrefix;
-	static int counter = 1;
+	int counter;
 	static int totalPortionNumbers;
 	public void run()
 	{
@@ -28,15 +39,11 @@ public class ParallelAnalyzer extends Thread
 			specificXMLDir = getSpecificXMLDir();
 			System.out.println(specificXMLDir);
 			Id = getCounter();
-			addCounter();
+			//addCounter();
 		}
 		execute(specificDumpDir,specificXMLDir,Id);
 	}
 	
-	public synchronized void addCounter()
-	{
-		counter++;
-	}
 	
 	public synchronized String getSpecificDumpDir()
 	{
@@ -57,62 +64,76 @@ public class ParallelAnalyzer extends Thread
 	{
 		WikiXMLParser wxsp = WikiXMLParserFactory.getSAXParser(specificDumpDir);
 		try {
-        	XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
-        	XMLStreamWriter writer = outputFactory.createXMLStreamWriter(new FileOutputStream(specificXMLDir), "UTF-8");
-            writer.writeStartDocument();
-            writer.writeStartElement("d");
+        	//XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
         	
-            ParallelHandler MBH = new ParallelHandler(writer,13539091/8,Id);
+        	//BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(specificXMLDir));
+        	BufferedWriter bufferedWriter = new BufferedWriter(
+        			new OutputStreamWriter(new FileOutputStream(specificXMLDir),"UTF-8"));
+        	bufferedWriter.write("<?xml version=\"1.0\" ?>");
+        	bufferedWriter.write("<d>");
+        	           
+            ParallelHandler MBH = new ParallelHandler(bufferedWriter,13539091/64,Id);
             
             wxsp.setPageCallback(MBH);
                 
             long startTime = System.currentTimeMillis();
             
             wxsp.parse();
-
-            writer.writeEndElement();
-            writer.writeEndDocument();
-            writer.close();
-            
+           
+            bufferedWriter.write("</d>");
+            bufferedWriter.flush();
+            bufferedWriter.close();
+            //bufferedWriter.write(" </mediawiki>");
             long elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
             
-            //System.out.println("Totally "+ParallelAnalyzer.pageCount+" pages  crawled. Totally "
-            		//+ParallelAnalyzer.linkCount+" links crawled.");
             System.out.println("For portion "+Id+":totally "+elapsedSeconds+" seconds used.");
         }catch(Exception e) {
                 e.printStackTrace();
         }
 	}
 	
-	public ParallelAnalyzer(String DumpDirPrefix,String XMLDirPrefix, int totalPortionNumbers)
+	public ParallelAnalyzer(String DumpDirPrefix,String XMLDirPrefix, int totalPortionNumbers,int counter)
 	{		
 		ParallelAnalyzer.DumpDirPrefix = DumpDirPrefix;
 		ParallelAnalyzer.XMLDirPrefix = XMLDirPrefix;
 		ParallelAnalyzer.totalPortionNumbers = totalPortionNumbers;
+		this.counter = counter;
 	}
 	public static void main(String[] args)
 	{
-		String PortionDumpDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki";
-		String XMLoutputPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki";
 		
-		ParallelAnalyzer parallelAnalyzer = new ParallelAnalyzer(PortionDumpDirPrefix,XMLoutputPrefix,8);
-		Thread AnalyzerThread1 = new Thread(parallelAnalyzer);
-		Thread AnalyzerThread2 = new Thread(parallelAnalyzer);
-		Thread AnalyzerThread3 = new Thread(parallelAnalyzer);
-		Thread AnalyzerThread4 = new Thread(parallelAnalyzer);
-		Thread AnalyzerThread5 = new Thread(parallelAnalyzer);
-		Thread AnalyzerThread6 = new Thread(parallelAnalyzer);
-		Thread AnalyzerThread7 = new Thread(parallelAnalyzer);
-		Thread AnalyzerThread8 = new Thread(parallelAnalyzer);
+		if (args.length < 4) {
+		      System.out.println("USAGE: ExtractLinks <input-file> <output-file> <numberOfThreads> <numberOfPortions>");
+		      System.exit(255);
+		      }
 		
-		AnalyzerThread1.start();
-		AnalyzerThread2.start();
-		AnalyzerThread3.start();
-		AnalyzerThread4.start();
-		AnalyzerThread5.start();
-		AnalyzerThread6.start();
-		AnalyzerThread7.start();
-		AnalyzerThread8.start();
+//		String PortionDumpDirPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki64/wholeWiki";
+//		String XMLoutputPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki64Structure/wholeWiki";
+		
+		String PortionDumpDirPrefix = args[0];
+		String XMLoutputPrefix = args[1];
+		int numThread = Integer.parseInt(args[2]);
+		int numPortions = Integer.parseInt(args[3]);
+		
+		ExecutorService service = Executors.newFixedThreadPool(numThread);
+		for(int i = 1;i <= numPortions;i++)
+		{
+			//System.out.println("Starting part "+(i+1));
+			
+			Runnable thread = new ParallelAnalyzer(PortionDumpDirPrefix,XMLoutputPrefix,numPortions,i);
+			service.execute(thread);
+
+		}
+		service.shutdown();
+        try
+		{
+			service.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e)
+		{
+			System.out.println("Termination error!");
+			e.printStackTrace();
+		}
+        System.out.println("all thread complete");
 	}
 
 }

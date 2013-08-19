@@ -18,6 +18,14 @@ import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 import edu.jhu.nlp.wikipedia.WikiPage;
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time	
+ * This class will keep on tracking a list of names and steps. It will expand from certain points in certain
+ * steps and write all the page titles that can be retrieved into file.
+ */
 public class GetTitles extends MyCallBackHandler
 {
 	public HashSet<String> titles;
@@ -30,7 +38,7 @@ public class GetTitles extends MyCallBackHandler
 	}
 	
 	@Override
-	
+	//extract all the links from a page
 	public void StructureRecursion(List<Section> sectionList, String l) throws XMLStreamException
 	{
 		int k = 1;

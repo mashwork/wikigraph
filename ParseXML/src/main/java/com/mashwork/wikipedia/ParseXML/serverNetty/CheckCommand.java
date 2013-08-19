@@ -3,8 +3,20 @@ package com.mashwork.wikipedia.ParseXML.serverNetty;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time
+ * This class is used to check whether a http query is correct.	
+ */
 public class CheckCommand
 {
+	/**
+	 * @param code Depending on which command it is, different checks will apply.
+	 * @param command the command which contains parameters
+	 * @return error code.
+	 */
 	public static String isErrorCommand(String code, Map<String, List<String>> command)
 	{
 		if(code.contains("1"))
@@ -54,6 +66,10 @@ public class CheckCommand
 		
 	}
 	
+	/**
+	 * @param type indicates which kind of error it is.
+	 * @return a string that indicates the error type
+	 */
 	public static String errorCommand(int type)
 	{
 		if(type==0)

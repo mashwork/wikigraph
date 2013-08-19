@@ -5,61 +5,58 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
 
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.index.Index;
 import org.neo4j.helpers.collection.MapUtil;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
+import org.neo4j.unsafe.batchinsert.BatchInserters;
 
 import com.mashwork.wikipedia.ParseXML.neo4j.HierachyManager;
 import com.mashwork.wikipedia.ParseXML.neo4j.Pair;
 import com.mashwork.wikipedia.ParseXML.neo4j.RelTypes;
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time
+ * this class is used to create toc nodes and insert links	
+ */
 public class LinkElementParserMemoryIndex
 {
 	public final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newInstance();	//***
-	public GraphDatabaseService graphDb;
-	public Index<Node> nodeIndex;
-	public Index<Node> TocIndex;
-	public Index<Node> fullTextIndex;
-	public Transaction tx;
+	BatchInserter inserter;
 	public HashMap<String,Long> inMemoryIndex;
-	public BatchInserter inserter;
-	public Node fatherNode;
 	public int part;
 	
 	final String USERNAME_KEY = "pageName";
 	final String TOC_KEY = "TocName";
 
 	static String fatherName;
-	final int pageCount = 13539091/8;	//782367
+	final int pageCount = 13539091/64;	//782367
 	int linkCount = 0;
 	int counter = 0;
 	long startTime;
 	
-	public LinkElementParserMemoryIndex(GraphDatabaseService graphDb, Index<Node> nodeIndex,Index<Node> TocIndex,
-			Index<Node> fullTextIndex, Transaction tx, HashMap<String,Long> inMemoryIndex,BatchInserter inserter,int part)
+	HashSet<String> avoidDupe;
+	
+	public LinkElementParserMemoryIndex(String DBDir, HashMap<String,Long> inMemoryIndex)
 	{
-		this.graphDb = graphDb;
-		this.nodeIndex = nodeIndex;
-		this.TocIndex = TocIndex;
-		this.fullTextIndex = fullTextIndex;
-		this.tx = tx;
+    	this.inserter = BatchInserters.inserter(DBDir);
 		this.inMemoryIndex = inMemoryIndex;
-		this.inserter = inserter;
-		this.part = part;
+    	registerShutdownHook();
 	}
 	
-	public void parse(String fileName)
+	public void parse(String fileName,int part)
 	{
+		this.part = part;
 		System.out.println(fileName);
 		try
 		{
@@ -103,6 +100,7 @@ public class LinkElementParserMemoryIndex
         }
     }
 	
+	//use a stream reader to recognize start and end of xml
 	private void parseElements(XMLStreamReader reader)
 	{
         LinkedList<String> elementStack = new LinkedList<String>();
@@ -135,37 +133,69 @@ public class LinkElementParserMemoryIndex
 	
 	public void handleElement(String element, String value)
 	{
-		if(element.equals("d"))
+		if(element.equals("d"))			//the whole xml is in a big <d> </d>
 		{
 			return;
 		}
 		
-		if(element.equals("t"))
+		if(element.equals("t"))			//means title
 		{
 			printStatus();
+			Long nodeId = retrieveFatherNodeId(value);
+			Pair<String,Long> IdPair = new Pair<String,Long>(element,nodeId);
+			HierachyManager.addIdPath(IdPair);
+			
+			Pair<String,String> namePair = new Pair<String,String>(element,value);
+			HierachyManager.tractNamePath(namePair);
+
+			clearDupe();
 		}
 		
-		if(!element.equals("l"))
+		else if(!element.equals("l"))		//means links
 		{
-			Pair<String,String> pair = new Pair<String,String>(element,value);
-			HierachyManager.tractPath(pair);
-			fatherNode = retrieveFatherNode(HierachyManager.getPath());
+			if(Filter.need2Skip(element)) return;
+			
+			Pair<String,String> namePair = new Pair<String,String>(element,value);	//for example, it is a pair of <t,Game of Thrones>
+			HierachyManager.tractNamePath(namePair);		//used to keep tracking the position of a tree structure
+
+			Map<String, Object> properties = MapUtil.map(USERNAME_KEY, HierachyManager.getNamePath());//TOC_KEY
+			Long sonNodeId = inserter.createNode(properties);
+			Pair<String,Long> IdPair = new Pair<String,Long>(element,sonNodeId);
+			
+			HierachyManager.updateIdPath(IdPair);
+			Long fatherNodeId = HierachyManager.getTopId();
+			
+			HierachyManager.addIdPath(IdPair);
+			
+			createTocLinks(fatherNodeId, sonNodeId);
+			clearDupe();				
+			//fatherNodeId = sonNodeId;
 		}
 		else			//This is the case for links. Need to analyze several cases.
 		{
-			createLinks(fatherNode, value);	
+			if(linkAlreadyCreated(value)) return;
+			Long fatherNodeId = HierachyManager.getTopId();
+			createLinks(fatherNodeId, value);	
 		}
 	}
 	
-	public void needToFlush()
+	public void clearDupe()
 	{
-		linkCount++;
-		if ( linkCount > 0 && linkCount % 100000 == 0 ) {
-            tx.success();
-            tx.finish();
-            tx = graphDb.beginTx();
-        }
+		avoidDupe = new HashSet<String>();
 	}
+	
+	public boolean linkAlreadyCreated(String linkName)
+	{
+		if(avoidDupe.add(linkName))
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+	
 	
 	public void printStatus()
 	{
@@ -182,37 +212,73 @@ public class LinkElementParserMemoryIndex
 		}
 	}
 	
-	private void createLinks(Node fatherNode, String link)
+	private void createLinks(Long fatherNodeId, String link)
 	{
-		if(fatherNode == null) return;
+		if(fatherNodeId == null) 
+		{
+			System.out.println("fahter id is null");
+			return;
+		}
 		link = Filter.toNormalLink(link);	
 		if(Filter.toBeFiltered(link)) return;
 		Long sonNodeId = retrieveSonNode(link);
-		if(sonNodeId==null) return;
-		
-		needToFlush();
-		if(Filter.isAnchorLink(link))
-		{	
-			inserter.createRelationship(fatherNode.getId(), sonNodeId, RelTypes.ANCHOR, MapUtil.map());
-		}
-		else if(Filter.isCategoryLink(link))
+		if(sonNodeId==null)
 		{
-			inserter.createRelationship(fatherNode.getId(), sonNodeId, RelTypes.CATEGORY, MapUtil.map());
+			//System.out.println("son id is null");
+			return;
+		}
+
+		linkCount++;
+			if(Filter.isCategoryLink(link))
+		{
+			inserter.createRelationship(fatherNodeId, sonNodeId, RelTypes.CATEGORY, MapUtil.map());
 		}
 		else
 		{
-			inserter.createRelationship(fatherNode.getId(), sonNodeId, RelTypes.INTERNAL, MapUtil.map());
+			inserter.createRelationship(fatherNodeId, sonNodeId, RelTypes.INTERNAL, MapUtil.map());
 		}
 	}
 	
-	private Node retrieveFatherNode(String nodeName)
+	private void createTocLinks(Long fatherNodeId,Long sonNodeId)
 	{
-		nodeName = nodeName.split("#")[0];
-		Node result = nodeIndex.get(USERNAME_KEY,nodeName).getSingle();
-		return result;
+		if(fatherNodeId == null || sonNodeId == null)
+		{
+			System.out.println("id is null");
+			return;
+		}
+		else
+		{
+			inserter.createRelationship(fatherNodeId, sonNodeId, RelTypes.TOC, MapUtil.map());
+		}
 	}
+	
+	private Long retrieveFatherNodeId(String nodeName)
+	{
+		long Id = inMemoryIndex.get(nodeName);
+		return Id;
+	}
+	
+	
 	private Long retrieveSonNode(String nodeName)
 	{
 		return inMemoryIndex.get(nodeName);
 	}
+	public void shutdown()
+    {
+    	//indexProvider.shutdown();
+        inserter.shutdown(); 
+    }
+	
+	private void registerShutdownHook()
+    {
+        Runtime.getRuntime().addShutdownHook( new Thread()
+        {
+            @Override
+            public void run()
+            {
+                shutdown();
+            }
+        } );
+    }
+	
 }

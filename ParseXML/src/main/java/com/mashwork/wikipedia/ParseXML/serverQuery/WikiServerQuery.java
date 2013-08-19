@@ -12,6 +12,15 @@ import org.neo4j.graphdb.traversal.Traverser;
 import com.mashwork.wikipedia.ParseXML.neo4j.Pair;
 import com.mashwork.wikipedia.ParseXML.query.WikiQuery;
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time
+ * This class is a simple extension of WikiQuery. As most of the results in WikiQuery are
+ * <code>list</code> or <code>Path</code>, so this class just turn all those results into 
+ * <code>String</code> then it might be easier to return to user and print to screen.
+ */
 public class WikiServerQuery extends WikiQuery
 {
 	public boolean startNodeNotFound;

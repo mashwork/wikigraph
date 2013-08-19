@@ -1,10 +1,5 @@
 package com.mashwork.wikipedia.ParseXML.neo4jText;
 
-import java.io.FileOutputStream;
-
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.SimpleAnalyzer;
 import org.apache.lucene.util.Version;
@@ -16,18 +11,20 @@ import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.helpers.collection.MapUtil;
 
-import com.mashwork.wikipedia.ParseXML.MyCallBackHandler;
-import com.mashwork.wikipedia.ParseXML.neo4j.NodeElementParser;
-
 import edu.jhu.nlp.wikipedia.WikiXMLParser;
 import edu.jhu.nlp.wikipedia.WikiXMLParserFactory;
-
+@Deprecated
+/*
+ * All the classes under this package are deprecated. These classes used a different schema to put node and links into
+ * neo4j. It is efficient when the data size is small. But will have performance issue if it is big. Most of the time
+ * is spent on retrieving node(memory-IO swapping). The lucene index will be added to neo4j nodes which is not very efficient.
+ */
 public class ExtractText
 {
-	private  static GraphDatabaseService graphDb;
-    private  static Index<Node> nodeIndex;
-    private  static Index<Node> TocIndex;
-    private  static Index<Node> fullTextIndex;
+	private static GraphDatabaseService graphDb;
+    private static Index<Node> nodeIndex;
+    private static Index<Node> TocIndex;
+    private static Index<Node> fullTextIndex;
     
 	public static void main(String[] args)
 	{
@@ -53,8 +50,6 @@ public class ExtractText
 		Transaction tx = graphDb.beginTx();
         
         try {
-        	
-        	
             TextExtracter TE = new TextExtracter(graphDb, nodeIndex,TocIndex, fullTextIndex, tx);
             
             //if you want to print the information to the screen, uncomment the following line
@@ -67,8 +62,7 @@ public class ExtractText
             long startTime = System.currentTimeMillis();
             
             wxsp.parse();
-            
-            
+                    
             tx.success();
             
             long elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;

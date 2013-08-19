@@ -8,13 +8,20 @@ import org.json.simple.JSONObject;
 
 import com.mashwork.wikipedia.ParseXML.query.LuceneQuery;
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time	
+ * This class is used to tag the tweets and save the query results in json.
+ */
 public class WriteTaggedJSON
 {
 	FileWriter Fw;
 	LuceneQuery luceneQuery;
 	ParseJSON twits;
 	
-	public WriteTaggedJSON(String LuceneIndexDir,String outputDir)
+	public WriteTaggedJSON(String LuceneIndexDir,String outputDir,String JSONDir,String graphDbDir)
 	{
 		try
 		{
@@ -25,8 +32,8 @@ public class WriteTaggedJSON
 			e.printStackTrace();
 		}
 		
-		this.luceneQuery = new LuceneQuery(LuceneIndexDir);
-		this.twits = new ParseJSON("/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/twitter_20130609-21.log");
+		this.luceneQuery = new LuceneQuery(LuceneIndexDir,graphDbDir);
+		this.twits = new ParseJSON(JSONDir);
 	}
 	
 	public void parse()
@@ -82,10 +89,25 @@ public class WriteTaggedJSON
 	
 	public static void main(String[] args) throws Exception
 	{
-		String LuceneIndexDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/" +
-				"GOT_D3_Poriton/MergedLuceneIndex_aliasAbbre";
-		String outputDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/twitter_20130609-21_tagged_alias.log";
-		WriteTaggedJSON writeTaggedJSON = new WriteTaggedJSON(LuceneIndexDir,outputDir);
+		if (args.length < 4) {
+		      System.out.println("USAGE: ExtractLinks <JSONDIR> <GraphDBDir> <LuceneIndeDir> <outputDir>");
+		      System.exit(255);
+		      }
+		
+//		String JSONDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/jiali_tweets";
+//		//String JSONDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/twitter_20130609-21.log";
+//		String graphDbDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/GraphDB";
+//		String LuceneIndexDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/" +
+//				"GOT_D3_Poriton/MergedLuceneIndex_aliasAbbre";
+//		String outputDir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/jiali_tweets_tagged";
+		
+		String JSONDir = args[0];
+		String graphDbDir = args[1];
+		String LuceneIndexDir = args[2];
+		String outputDir = args[3];
+		
+		
+		WriteTaggedJSON writeTaggedJSON = new WriteTaggedJSON(LuceneIndexDir,outputDir,JSONDir,graphDbDir);
 		writeTaggedJSON.parse();
 		
 	}

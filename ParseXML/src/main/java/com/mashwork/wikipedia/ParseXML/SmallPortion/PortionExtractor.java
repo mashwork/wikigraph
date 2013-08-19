@@ -8,6 +8,16 @@ import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time	
+ * Detailed implementation of extracting small portion of wkiDump. A list of names will be kept
+ * in HashMap called <code>toCrawl</code>. Every time the reader reads a page, check whether this is
+ * the page we want. If it is, write it to file. Use this method to create a small dataset or the 
+ * dataset about certain stuff, such as TV series or Sports.
+ */
 public class PortionExtractor
 {
 	//HashSet<String> toCrawl;
@@ -17,15 +27,16 @@ public class PortionExtractor
 	FileWriter FW;
 	int counter = 0;
 	int processed = 0;
-	protected static int total = 13539091;
+	protected int total = 13539091;
 	
-	public PortionExtractor(String dir, HashMap<String,Integer> toCrawl, String output) throws IOException
+	public PortionExtractor(String dir, HashMap<String,Integer> toCrawl, String output, int dumpTotalPage) throws IOException
 	{
 		FileInputStream FS = new FileInputStream(dir);
 		InputStreamReader SR = new InputStreamReader(FS);
 		BR = new BufferedReader(SR);
 		this.toCrawl = toCrawl;
 		FW = new FileWriter(output);
+		this.total = dumpTotalPage;
 	}
 	
 	public String returnPage()
@@ -92,13 +103,14 @@ public class PortionExtractor
 				}
 			}
 		}
-		
+		System.out.println("Totally "+processed+"pages crawled.");
 		FW.write(line);				//add "</mediawiki>" to the end of the file
 		
 		FW.flush();
 		FW.close();
 	}
 	
+	//extract the title information from the wikidump
 	public String parseTitle(String line)
 	{
 		int start = line.indexOf("<title>");

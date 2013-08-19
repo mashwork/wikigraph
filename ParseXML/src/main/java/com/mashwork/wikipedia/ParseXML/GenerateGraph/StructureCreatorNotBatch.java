@@ -1,9 +1,6 @@
 package com.mashwork.wikipedia.ParseXML.GenerateGraph;
 
 import java.io.FileOutputStream;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -17,14 +14,16 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.helpers.collection.MapUtil;
-import org.neo4j.unsafe.batchinsert.BatchInserter;
-import org.neo4j.unsafe.batchinsert.BatchInserters;
-
-import com.mashwork.wikipedia.ParseXML.query.WikiQuery;
 
 import edu.jhu.nlp.wikipedia.WikiXMLParser;
 import edu.jhu.nlp.wikipedia.WikiXMLParserFactory;
 
+@Deprecated
+/*
+ * All the classes under this package are deprecated. These classes used a different schema to put node and links into
+ * neo4j. It is efficient when the data size is small. But will have performance issue if it is big. Most of the time
+ * is spent on retrieving node(memory-IO swapping).
+ */
 public class StructureCreatorNotBatch
 {
 	private GraphDatabaseService graphDb;
@@ -122,9 +121,7 @@ public class StructureCreatorNotBatch
 		//structureCreator.insertLinks();
 			
 		structureCreator.shutdown();
-        
-        
-
+       
 	}
 	
 	private void shutdown()

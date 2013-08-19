@@ -7,6 +7,13 @@ import de.tudarmstadt.ukp.wikipedia.parser.Template;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiTemplateParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.ResolvedTemplate;
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time	
+ * This class is used for parsing wikiTemplates. Some of the information in templates might be useful.
+ */
 public class WikiTemplateParser implements MediaWikiTemplateParser
 {
 	private final String templatePrefix = "";

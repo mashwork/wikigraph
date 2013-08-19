@@ -3,8 +3,6 @@ package com.mashwork.wikipedia.ParseXML.GenerateGraph;
 import java.net.URLDecoder;
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.Map;
-
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -27,11 +25,16 @@ import de.tudarmstadt.ukp.wikipedia.parser.SectionContent;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 
-
 import edu.jhu.nlp.wikipedia.PageCallbackHandler;
 import edu.jhu.nlp.wikipedia.WikiPage;
 import edu.jhu.nlp.wikipedia.WikiXMLParser;
 
+@Deprecated
+/*
+ * All the classes under this package are deprecated. These classes used a different schema to put node and links into
+ * neo4j. It is efficient when the data size is small. But will have performance issue if it is big. Most of the time
+ * is spent on retrieving node(memory-IO swapping).
+ */
 public class LinkElementCreator implements PageCallbackHandler
 {
 	int counter = 0;
@@ -169,11 +172,6 @@ public class LinkElementCreator implements PageCallbackHandler
 		{
 			return result.getId();
 		}
-//		if(inMemoryIndex.get(nodeName)==null)
-//		{
-//			return (long) -1;
-//		}
-//		return inMemoryIndex.get(nodeName);
     }
 
     
@@ -186,14 +184,8 @@ public class LinkElementCreator implements PageCallbackHandler
 			{
 				int level = section.getLevel();
 				String tableLevel = "c" + String.valueOf(level);
-//				HierachyManager.findParentNode(tableLevel);
-//				Node currentPage = retrieveTocNode(section.getTitle());		
-//				if(currentPage==null) continue;
-//				Pair<String,Node> pair = new Pair<String,Node>(tableLevel,currentPage);
-//				HierachyManager.MyPop(pair);
-//				HierachyManager.MyPush(pair);
 				Pair<String,String> pair = new Pair<String,String>(tableLevel,section.getTitle());
-				HierachyManager.tractPath(pair);
+				HierachyManager.tractNamePath(pair);
 			}
 			
 			if(section instanceof SectionContent)
@@ -214,20 +206,20 @@ public class LinkElementCreator implements PageCallbackHandler
 							if(isAnchorLink(linkName))
 							{
 								//createRelationship(HierachyManager.MyPeek().getSecond().getId(),linkName,RelTypes.ANCHOR);
-								long parentId = findNodeId(HierachyManager.getPath());
+								long parentId = findNodeId(HierachyManager.getNamePath());
 								if(parentId!=-1)
 								createRelationship(parentId,linkName,RelTypes.ANCHOR);
 							}
 							else if(isCategoryLink(linkName))
 							{
-								long parentId = findNodeId(HierachyManager.getPath());
+								long parentId = findNodeId(HierachyManager.getNamePath());
 								if(parentId!=-1)
 								createRelationship(parentId,linkName,RelTypes.CATEGORY);
 							}
 							else
 							{
 								//createRelationship(HierachyManager.MyPeek().getSecond().getId(),linkName,RelTypes.INTERNAL);
-								long parentId = findNodeId(HierachyManager.getPath());
+								long parentId = findNodeId(HierachyManager.getNamePath());
 								if(parentId!=-1)
 								createRelationship(parentId,linkName,RelTypes.INTERNAL);
 							}
@@ -271,15 +263,10 @@ public class LinkElementCreator implements PageCallbackHandler
 					System.out.println("Time estimate: "+hour+"h"+minute+"m.");
 			}
 		
-//			Node node = retrievePageNode(title);
-//			Pair<String,Node> pair = new Pair<String,Node>("t",node);
-//			HierachyManager.MyPop(pair);
-//			HierachyManager.MyPush(pair);
 			Pair<String,String> pair = new Pair<String,String>("t",title);
-			HierachyManager.tractPath(pair);
+			HierachyManager.tractNamePath(pair);
 			
 			ParsedPage pp = parser.parse(page.getWikiText());
 			StructureRecursion(pp.getSections(),"");
-
  }
 }

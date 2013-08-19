@@ -125,6 +125,7 @@ public class SearchAPIServerHandler extends SimpleChannelUpstreamHandler {
         }
     }
     
+    //Decide which kind of query the user is asking. And find the corresponding method.
     public String query(Map<String, List<String>> args)
 	{
     	String method = null;

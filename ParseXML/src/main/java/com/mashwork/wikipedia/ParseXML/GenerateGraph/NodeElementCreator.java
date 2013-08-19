@@ -4,20 +4,14 @@ import java.net.URLDecoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.SimpleAnalyzer;
-import org.apache.lucene.util.Version;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
-import org.neo4j.graphdb.index.IndexManager;
-import org.neo4j.helpers.collection.MapUtil;
 
 import com.mashwork.wikipedia.ParseXML.neo4j.HierachyManager;
 import com.mashwork.wikipedia.ParseXML.neo4j.Pair;
@@ -26,7 +20,6 @@ import com.mashwork.wikipedia.ParseXML.neo4jText.WikiTemplateParser;
 
 import de.tudarmstadt.ukp.wikipedia.parser.Content;
 import de.tudarmstadt.ukp.wikipedia.parser.Link;
-import de.tudarmstadt.ukp.wikipedia.parser.Paragraph;
 import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
 import de.tudarmstadt.ukp.wikipedia.parser.Section;
 import de.tudarmstadt.ukp.wikipedia.parser.SectionContainer;
@@ -39,7 +32,12 @@ import edu.jhu.nlp.wikipedia.PageCallbackHandler;
 import edu.jhu.nlp.wikipedia.WikiPage;
 import edu.jhu.nlp.wikipedia.WikiXMLParser;
 
-
+@Deprecated
+/*
+ * All the classes under this package are deprecated. These classes used a different schema to put node and links into
+ * neo4j. It is efficient when the data size is small. But will have performance issue if it is big. Most of the time
+ * is spent on retrieving node(memory-IO swapping).
+ */
 public class NodeElementCreator implements PageCallbackHandler
 {
 	int counter = 0;

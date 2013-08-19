@@ -2,7 +2,6 @@ package com.mashwork.wikipedia.ParseXML.neo4j;
 
 import java.net.URLDecoder;
 import java.text.DecimalFormat;
-import java.util.Iterator;
 import java.util.List;
 
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -10,6 +9,12 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
+@Deprecated
+/*
+ * All the classes under this package are deprecated. These classes used a different schema to put node and links into
+ * neo4j. It is efficient when the data size is small. But will have performance issue if it is big. Most of the time
+ * is spent on retrieving node(memory-IO swapping).
+ */
 public class LinkElementParser extends ElementParser{
 	final String USERNAME_KEY = "pageName";
 	final String TOC_KEY = "TocName";

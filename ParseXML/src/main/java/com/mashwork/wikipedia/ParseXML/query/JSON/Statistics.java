@@ -11,6 +11,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+//this class is used for a simple statistics analyze. Do not use this class
+@Deprecated
 public class Statistics
 {
 	BufferedReader BR;

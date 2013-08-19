@@ -19,6 +19,12 @@ import org.neo4j.unsafe.batchinsert.BatchInserters;
 import edu.jhu.nlp.wikipedia.WikiXMLParser;
 import edu.jhu.nlp.wikipedia.WikiXMLParserFactory;
 
+@Deprecated
+/*
+ * All the classes under this package are deprecated. These classes used a different schema to put node and links into
+ * neo4j. It is efficient when the data size is small. But will have performance issue if it is big. Most of the time
+ * is spent on retrieving node(memory-IO swapping).
+ */
 public class StructureCreator
 {
 	private  static GraphDatabaseService graphDb;

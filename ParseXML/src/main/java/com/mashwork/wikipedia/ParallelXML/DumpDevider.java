@@ -7,6 +7,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 
+
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time	2013-8
+ * @comment	This class is used for dividing the original wikidump into <code>portion</code> parts. So that later on this
+ * 			files can be processed in parallel.
+ */
 public class DumpDevider
 {
 	BufferedReader BR;
@@ -14,12 +23,19 @@ public class DumpDevider
 	String output;
 	FileWriter FW;
 
-	protected static int total = 13539091;			//13539091	//782367
+	protected static int total = 30346;			//13539091	//782367	//813394TSBD2
 	int portionSize;
 	int portion;
 	int portionCounter = 1;
 	
-	public DumpDevider(String dir, String output,int portion) throws IOException
+	/**
+	 * @param dir	the input file dir.
+	 * @param output the output file dir.
+	 * @param portion	the number of parts you want to divide into.
+	 * @param totalPageNumber	the total page number. For wiki 2012-06-04 dump, there are 13539091 pages
+	 * @throws IOException
+	 */
+	public DumpDevider(String dir, String output,int portion,int totalPageNumber) throws IOException
 	{
 		FileInputStream FS = new FileInputStream(dir);
 		InputStreamReader SR = new InputStreamReader(FS);
@@ -27,8 +43,14 @@ public class DumpDevider
 		this.portionSize = getPortinSize(portion);
 		this.portion = portion;
 		this.output = output;
+		DumpDevider.total = totalPageNumber;
 	}
 	
+	/**
+	 * @param output	your input dir.
+	 * @return		the sequential output file names.
+	 * if the output dir is aaa.xml, the returned value will be aaa-1.xml, aaa-2.xml and ect.
+	 */
 	public String getOutPutName(String output)
 	{
 		String result = output.split("\\.")[0];
@@ -63,7 +85,7 @@ public class DumpDevider
 		FW.write(getHead());
 		while((line = BR.readLine())!=null && counter < portionSize)	// && limit-- >0
 		{		
-			if(line.contains("<page>"))
+			if(line.contains("<page>"))			
 			{
 				counter++;
 				//System.out.println("Counter: "+counter+" Total/100: " + total/100);
@@ -104,10 +126,22 @@ public class DumpDevider
 	
 	public static void main(String[] args) throws IOException
 	{
-		String dir = "/Users/Ricky/mashwork/wikidump/new/enwiki-20130604-pages-articles.xml";
-		String output = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki.xml";
-		int portion = 8;
-		DumpDevider dumpDevider = new DumpDevider(dir,output,portion);
+      if (args.length < 4) {
+      System.out.println("USAGE: ExtractLinks <input-file> <output-file> <portion> <totalPageNumber>");
+      System.exit(255);
+      }
+//		String dir = "/Users/Ricky/mashwork/wikidump/new/enwiki-20130604-pages-articles.xml";
+//		String output = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/wholeWiki/wholeWiki.xml";
+//		String dir = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/new/TSB_D1_Pages.xml";
+//		String output = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/TSB/TSB_D1/TSB_D1.xml";
+//		int portion = 64;
+		
+		String dir = args[0];
+		String output = args[1];
+		int portion = Integer.parseInt(args[2]);
+		int totalPageNumber = Integer.parseInt(args[3]);
+		
+		DumpDevider dumpDevider = new DumpDevider(dir,output,portion,totalPageNumber);
 		dumpDevider.devide();
 	}
 }

@@ -2,6 +2,14 @@ package com.mashwork.wikipedia.ParseXML.query;
 
 import java.util.HashSet;
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time
+ * This class is used for converting titles into normal ones. But some of the words will not be capitalized.
+ * So "game of thrones" will become "Game of Thrones"
+ */
 public class FormalString
 {
 	//static String[] preposotions = {"and", "the", "in", "an", "or", "at", "of",

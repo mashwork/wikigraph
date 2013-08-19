@@ -12,6 +12,12 @@ import org.neo4j.graphdb.index.Index;
 
 //import org.codehaus.stax2.XMLInputFactory2;
 
+@Deprecated
+/*
+ * All the classes under this package are deprecated. These classes used a different schema to put node and links into
+ * neo4j. It is efficient when the data size is small. But will have performance issue if it is big. Most of the time
+ * is spent on retrieving node(memory-IO swapping).
+ */
 public abstract class ElementParser {
 	private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newInstance();	//***
 	

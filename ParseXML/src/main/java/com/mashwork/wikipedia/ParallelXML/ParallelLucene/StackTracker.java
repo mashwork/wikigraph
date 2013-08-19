@@ -6,6 +6,13 @@ import java.util.Stack;
 
 import com.mashwork.wikipedia.ParseXML.neo4j.Pair;
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time	
+ * this class is used for tracking where we are in a tree structure. All the ancestor nodes will be stored in stack.
+ */
 public class StackTracker
 {
 	HashMap<String,Integer> Order;
@@ -34,6 +41,8 @@ public class StackTracker
 		pathStack = new Stack<Pair<String,String>>();
 	}
 	
+	
+	//update the path. Will pop() first, then push().
 	public void tractPath(Pair<String,String> pair)
 	{
 		if(pathStack.isEmpty())

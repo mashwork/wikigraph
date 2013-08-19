@@ -16,6 +16,13 @@ import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.util.IOUtils;
 import org.apache.lucene.util.Version;
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time	
+ * modified from lu liu's analyzer. Do some preprocessing before add lucene index
+ */
 public final class WikiAnalyzer extends StopwordAnalyzerBase {
 
 	  /** Default maximum allowed token length */

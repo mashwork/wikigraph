@@ -47,12 +47,14 @@ public class MergeLuceneIndex
 	
 	public static void main(String[] args)
 	{
-		String subIndexesPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/LuceneDB/LuceneDB";
-		String mergedIndexPath = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/LuceneDB/LuceneDB_Merged";
+//		String subIndexesPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/LuceneDB/LuceneDB";
+//		String mergedIndexPath = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/LuceneDB/LuceneDB_Merged";
+		String subIndexesPrefix = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/LuceneDB_New_betterAlias/LuceneDB";
+		String mergedIndexPath = "/Users/Ricky/mashwork/wikiXmlParser/crawledXML/DataBase/LuceneDB_New_betterAlias/LuceneDB_merged";
 		//FSDirectory.open(new File(LuceneIndexDir));
 		try
 		{
-			mergeIndex(subIndexesPrefix,mergedIndexPath,8);
+			mergeIndex(subIndexesPrefix,mergedIndexPath,64);
 		}catch(Exception e)
 		{
 			e.printStackTrace();

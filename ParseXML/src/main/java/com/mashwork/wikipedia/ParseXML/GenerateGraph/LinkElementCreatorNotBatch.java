@@ -3,22 +3,16 @@ package com.mashwork.wikipedia.ParseXML.GenerateGraph;
 import java.net.URLDecoder;
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.Map;
-
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
-import org.neo4j.graphdb.index.IndexHits;
-import org.neo4j.helpers.collection.MapUtil;
-import org.neo4j.unsafe.batchinsert.BatchInserter;
 
 import com.mashwork.wikipedia.ParseXML.neo4j.HierachyManager;
 import com.mashwork.wikipedia.ParseXML.neo4j.Pair;
 import com.mashwork.wikipedia.ParseXML.neo4j.RelTypes;
 import com.mashwork.wikipedia.ParseXML.neo4j.TOCLocator;
-import com.mashwork.wikipedia.ParseXML.query.WikiQuery;
 
 import de.tudarmstadt.ukp.wikipedia.parser.Content;
 import de.tudarmstadt.ukp.wikipedia.parser.Link;
@@ -34,6 +28,12 @@ import edu.jhu.nlp.wikipedia.PageCallbackHandler;
 import edu.jhu.nlp.wikipedia.WikiPage;
 import edu.jhu.nlp.wikipedia.WikiXMLParser;
 
+@Deprecated
+/*
+ * All the classes under this package are deprecated. These classes used a different schema to put node and links into
+ * neo4j. It is efficient when the data size is small. But will have performance issue if it is big. Most of the time
+ * is spent on retrieving node(memory-IO swapping).
+ */
 public class LinkElementCreatorNotBatch implements PageCallbackHandler
 {
 	int counter = 0;
@@ -189,7 +189,7 @@ public class LinkElementCreatorNotBatch implements PageCallbackHandler
 				int level = section.getLevel();
 				String tableLevel = "c" + String.valueOf(level);
 				Pair<String,String> pair = new Pair<String,String>(tableLevel,section.getTitle());
-				HierachyManager.tractPath(pair);
+				HierachyManager.tractNamePath(pair);
 			}
 			
 			if(section instanceof SectionContent)
@@ -207,7 +207,7 @@ public class LinkElementCreatorNotBatch implements PageCallbackHandler
 							if(toBeFiltered(linkName)) continue;
 							linkName = toNormalLink(linkName);
 							
-							Node parentNode = retrieveNode(HierachyManager.getPath());
+							Node parentNode = retrieveNode(HierachyManager.getNamePath());
 							Node childNode = retrieveNode(linkName);
 
 							if(isAnchorLink(linkName))
@@ -268,7 +268,7 @@ public class LinkElementCreatorNotBatch implements PageCallbackHandler
 //			HierachyManager.MyPop(pair);
 //			HierachyManager.MyPush(pair);
 			Pair<String,String> pair = new Pair<String,String>("t",title);
-			HierachyManager.tractPath(pair);
+			HierachyManager.tractNamePath(pair);
 			
 			ParsedPage pp = parser.parse(page.getWikiText());
 			StructureRecursion(pp.getSections(),"");

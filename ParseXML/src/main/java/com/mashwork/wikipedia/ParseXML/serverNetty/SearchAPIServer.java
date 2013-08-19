@@ -23,6 +23,13 @@ import org.slf4j.LoggerFactory;
 
 import com.mashwork.wikipedia.ParseXML.serverQuery.WikiServerQuery;
 
+/**
+ * @author  Jiali Huang
+ *			Computer Science Department, 
+ *			Courant Institute Mathematical Sciences, NYU
+ * @time
+ * Use netty to handle http search.	Modified from Lu's http server code.
+ */
 public class SearchAPIServer {
 	
 	private static Logger logger = LoggerFactory.getLogger(SearchAPIServer.class.getName());
@@ -34,6 +41,7 @@ public class SearchAPIServer {
     private WikiServerQuery wikiServerQuery;
 
     //@SuppressWarnings("unchecked")
+    //you can change the default parameters by your self.
 	public SearchAPIServer(String[] args) throws Exception {
     	OptionParser parser = new OptionParser();
     	OptionSpec<String> input =
