@@ -27,6 +27,7 @@ import org.neo4j.unsafe.batchinsert.BatchInserters;
  *			Courant Institute Mathematical Sciences, NYU
  * @time	
  * this class is used for putting page nodes into neo4j(table of content node will be added by LinkElementParsermemoryIndex)
+ * Nodes will be created in batch mode which will be more efficient.
  */
 public class NodeElementParserMemoryIndex
 {
@@ -136,7 +137,7 @@ public class NodeElementParserMemoryIndex
     }
 	
 	/*
-	 * every an element is recognized, this funciton will be called to create node in neo4j.
+	 * every time an element is recognized, this function will be called to create node in neo4j.
 	 */
 	public void handleElement(String element, String value)
 	{

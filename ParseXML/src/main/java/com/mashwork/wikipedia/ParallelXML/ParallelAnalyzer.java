@@ -115,6 +115,7 @@ public class ParallelAnalyzer implements Runnable//extends Thread
 		int numThread = Integer.parseInt(args[2]);
 		int numPortions = Integer.parseInt(args[3]);
 		
+		//process all the file in parallel
 		ExecutorService service = Executors.newFixedThreadPool(numThread);
 		for(int i = 1;i <= numPortions;i++)
 		{

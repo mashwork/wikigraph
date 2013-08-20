@@ -27,7 +27,8 @@ import com.mashwork.wikipedia.ParseXML.neo4j.RelTypes;
  *			Computer Science Department, 
  *			Courant Institute Mathematical Sciences, NYU
  * @time
- * this class is used to create toc nodes and insert links	
+ * this class is used to create toc nodes and insert links. 
+ * Links will be created in batch mode which will be more efficient.
  */
 public class LinkElementParserMemoryIndex
 {
@@ -138,7 +139,7 @@ public class LinkElementParserMemoryIndex
 			return;
 		}
 		
-		if(element.equals("t"))			//means title
+		if(element.equals("t"))			//means title. Need to keep on tracking on both ID and name
 		{
 			printStatus();
 			Long nodeId = retrieveFatherNodeId(value);
@@ -151,7 +152,7 @@ public class LinkElementParserMemoryIndex
 			clearDupe();
 		}
 		
-		else if(!element.equals("l"))		//means links
+		else if(!element.equals("l"))		//means links. Need to keep on tracking on both ID and name
 		{
 			if(Filter.need2Skip(element)) return;
 			
@@ -168,7 +169,7 @@ public class LinkElementParserMemoryIndex
 			HierachyManager.addIdPath(IdPair);
 			
 			createTocLinks(fatherNodeId, sonNodeId);
-			clearDupe();				
+			clearDupe();				//For each page, use a new dupe list. Sometimes the same link will appear several times in a page.
 			//fatherNodeId = sonNodeId;
 		}
 		else			//This is the case for links. Need to analyze several cases.
@@ -229,7 +230,7 @@ public class LinkElementParserMemoryIndex
 		}
 
 		linkCount++;
-			if(Filter.isCategoryLink(link))
+		if(Filter.isCategoryLink(link))
 		{
 			inserter.createRelationship(fatherNodeId, sonNodeId, RelTypes.CATEGORY, MapUtil.map());
 		}
